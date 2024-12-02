@@ -1,6 +1,8 @@
 mod day1;
+mod day2;
 
 use day1::Day1;
+use day2::Day2;
 
 pub trait AOCDay {
     fn name(&self) -> String;
@@ -47,6 +49,8 @@ fn run_day(day: &impl AOCDay) {
 
 fn main() {
     let day1 = Day1 {};
+    let day2 = Day2 {};
 
-    run_day(&day1);
+    // run_day(&day1);
+    run_day(&day2);
 }
