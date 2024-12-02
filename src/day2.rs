@@ -7,7 +7,6 @@ fn string_to_ints(s: &str) -> Vec<i32> {
 }
 
 fn is_small_gaps(v: &Vec<i32>) -> bool {
-  let foo = v.clone();
   for i in 0..v.len() - 1 {
     let diff = (v[i + 1] - v[i]).abs();
     if diff > 3 || diff == 0 {
@@ -18,14 +17,6 @@ fn is_small_gaps(v: &Vec<i32>) -> bool {
   return true;
 }
 
-/*
-7 6 4 2 1
-1 2 7 8 9
-9 7 6 2 1
-1 3 2 4 5
-8 6 4 4 1
-1 3 6 7 9
-*/
 fn is_single_direction(v: &Vec<i32>) -> bool {
   let mut asc = v.clone();
   asc.sort();
@@ -33,14 +24,31 @@ fn is_single_direction(v: &Vec<i32>) -> bool {
   let mut desc = v.clone();
   desc.sort_by(|a, b| b.cmp(a));
 
-  let foo = *v == asc;
-  let bar = *v == desc;
-  
   *v == asc || *v == desc
 }
 
 fn does_pass(v: &Vec<i32>) -> bool {
   return is_small_gaps(v) && is_single_direction(v);
+}
+
+fn does_pass_part_2(v: &Vec<i32>) -> bool {
+  // First, check the full array
+  let does_pass = is_small_gaps(v) && is_single_direction(v);
+
+  if does_pass { return true; }
+
+  // Now we need to explode the input by removing element one at a time.
+  // We pass if any one of them passes.
+  for i in 0..v.len() {
+    let mut copy = v.clone();
+    copy.remove(i);
+    if is_small_gaps(&copy) && is_single_direction(&copy) {
+      return true;
+    }
+  }
+
+  
+  return false;
 }
 
 impl AOCDay for Day2 {
@@ -65,6 +73,10 @@ impl AOCDay for Day2 {
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
-    return "".to_string();
+    let decoded = input.iter()
+      .map(|s| string_to_ints(s)).collect::<Vec<Vec<i32>>>();
+    let passing_count = decoded.iter()
+      .filter(|v| does_pass_part_2(v)).count();
+    return passing_count.to_string();
   }
 }
