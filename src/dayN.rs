@@ -29,3 +29,14 @@ impl AOCDay for DayN {
     return "".to_string();
   }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_something() {
+        let result = "";
+        assert_eq!(result, "");
+    }
+}

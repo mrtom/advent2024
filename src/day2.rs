@@ -80,3 +80,32 @@ impl AOCDay for Day2 {
     return passing_count.to_string();
   }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_string_to_ints() {
+        let result = string_to_ints("7 6 4 2 1");
+        assert_eq!(result, vec![7, 6, 4, 2, 1]);
+    }
+
+    #[test]
+    fn test_is_small_gaps() {
+        let result = is_small_gaps(&vec![1, 2, 3, 4, 5]);
+        assert_eq!(result, true);
+    }
+
+    #[test]
+    fn test_is_large_gap() {
+        let result = is_small_gaps(&vec![1, 2, 6, 7]);
+        assert_eq!(result, false);
+    }
+
+    #[test]
+    fn test_is_no_gap() {
+        let result = is_small_gaps(&vec![1, 2, 3, 3]);
+        assert_eq!(result, false);
+    }
+}
