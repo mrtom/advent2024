@@ -1,12 +1,13 @@
-// mod day1;
-// mod day2;
+mod utils;
+mod day1;
+mod day2;
 mod day3;
 
 use std::path::Path;
-use std::string::ToString;
+use utils::read_file;
 
-// use day1::Day1;
-// use day2::Day2;
+use day1::Day1;
+use day2::Day2;
 use day3::Day3;
 
 pub trait AOCDay {
@@ -16,12 +17,6 @@ pub trait AOCDay {
 
     fn solve_part1(&self, input: &[String]) -> String;
     fn solve_part2(&self, input: &[String]) -> String;
-}
-
-fn read_file(file: &str) -> Vec<String> {
-    let contents = std::fs::read_to_string(file).expect("Could not read file");
-    let lines: Vec<String> = contents.lines().map(ToString::to_string).collect();
-    lines
 }
 
 fn run_day(day: &impl AOCDay) {
@@ -61,11 +56,11 @@ fn run_day(day: &impl AOCDay) {
 }
 
 fn main() {
-    // let day1 = Day1 {};
-    // let day2 = Day2 {};
+    let day1 = Day1 {};
+    let day2 = Day2 {};
     let day3 = Day3 {};
 
-    // run_day(&day1);
-    // run_day(&day2);
+    run_day(&day1);
+    run_day(&day2);
     run_day(&day3);
 }

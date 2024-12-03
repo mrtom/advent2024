@@ -33,10 +33,29 @@ impl AOCDay for DayN {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::utils::read_file;
 
     #[test]
     fn test_something() {
         let result = "";
         assert_eq!(result, "");
     }
+
+    #[test]
+  fn test_part_1() {
+    let day = DayN {};
+    assert_eq!(
+      "TODO",
+      day.solve_part1(&read_file("input/dayN/part1.txt"))
+    );
+  }
+
+  #[test]
+  fn test_part_2() {
+    let day = DayN {};
+    assert_eq!(
+      "TODO",
+      day.solve_part2(&read_file("input/dayN/part1.txt"))
+    );
+  }
 }

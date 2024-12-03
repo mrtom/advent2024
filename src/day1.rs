@@ -64,3 +64,27 @@ impl AOCDay for Day1 {
     result.to_string()
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+  use crate::utils::read_file;
+  
+  #[test]
+  fn test_part_1() {
+    let day = Day1 {};
+    assert_eq!(
+      "1882714",
+      day.solve_part1(&read_file("input/day1/part1.txt"))
+    );
+  }
+  
+  #[test]
+  fn test_part_2() {
+    let day = Day1 {};
+    assert_eq!(
+      "19437052",
+      day.solve_part2(&read_file("input/day1/part2.txt"))
+    );
+  }
+}
