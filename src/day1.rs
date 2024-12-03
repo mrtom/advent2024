@@ -38,8 +38,8 @@ impl AOCDay for Day1 {
   fn solve_part1(&self, input: &[String]) -> String {
     let (mut first, mut second) = parse_input(input);
     
-    first.sort();
-    second.sort();
+    first.sort_unstable();
+    second.sort_unstable();
     
     let result: i32 = first
     .iter()
@@ -56,7 +56,7 @@ impl AOCDay for Day1 {
     let result: i32 = first
     .iter()
     .map(|&x| {
-      let count = second.iter().filter(|&y| *y == x).count() as i32;
+      let count = i32::try_from(second.iter().filter(|&y| *y == x).count()).unwrap();
       x * count
     })
     .sum();

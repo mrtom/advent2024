@@ -1,11 +1,12 @@
-mod day1;
-mod day2;
+// mod day1;
+// mod day2;
 mod day3;
 
 use std::path::Path;
+use std::string::ToString;
 
-use day1::Day1;
-use day2::Day2;
+// use day1::Day1;
+// use day2::Day2;
 use day3::Day3;
 
 pub trait AOCDay {
@@ -19,7 +20,7 @@ pub trait AOCDay {
 
 fn read_file(file: &str) -> Vec<String> {
     let contents = std::fs::read_to_string(file).expect("Could not read file");
-    let lines: Vec<String> = contents.lines().map(|s| s.to_string()).collect();
+    let lines: Vec<String> = contents.lines().map(ToString::to_string).collect();
     lines
 }
 
@@ -38,7 +39,7 @@ fn run_day(day: &impl AOCDay) {
     if test1 == day.test_answer_part1() {
         println!("Part 1 Test Passed, attemtping to solve");
         let answer1 = day.solve_part1(&input_data1);
-        println!("Part 1: {}", answer1);
+        println!("Part 1: {answer1}");
 
         let test_data_name = if Path::new(td2_name).exists() { td2_name } else { td1_name };
         let input_data_name = if Path::new(id2_name).exists() { id2_name } else { id1_name };
@@ -50,7 +51,7 @@ fn run_day(day: &impl AOCDay) {
         if test2 == day.test_answer_part2() {
             println!("Part 2 Test Passed, attemtping to solve");
             let answer2 = day.solve_part2(&input_data2);
-            println!("Part 2: {}", answer2);
+            println!("Part 2: {answer2}");
         } else {
             println!("Part 2 Test Failed");
         }
@@ -60,11 +61,11 @@ fn run_day(day: &impl AOCDay) {
 }
 
 fn main() {
-    let day1 = Day1 {};
-    let day2 = Day2 {};
+    // let day1 = Day1 {};
+    // let day2 = Day2 {};
     let day3 = Day3 {};
 
-    run_day(&day1);
-    run_day(&day2);
+    // run_day(&day1);
+    // run_day(&day2);
     run_day(&day3);
 }

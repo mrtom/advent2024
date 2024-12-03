@@ -19,7 +19,7 @@ fn is_small_gaps(v: &[i32]) -> bool {
 
 fn is_single_direction(v: &Vec<i32>) -> bool {
   let mut asc = v.clone();
-  asc.sort();
+  asc.sort_unstable();
 
   let mut desc = v.clone();
   desc.sort_by(|a, b| b.cmp(a));
@@ -93,19 +93,19 @@ mod tests {
 
     #[test]
     fn test_is_small_gaps() {
-        let result = is_small_gaps(&vec![1, 2, 3, 4, 5]);
-        assert_eq!(result, true);
+        let result = is_small_gaps(&[1, 2, 3, 4, 5]);
+        assert!(result);
     }
 
     #[test]
     fn test_is_large_gap() {
-        let result = is_small_gaps(&vec![1, 2, 6, 7]);
-        assert_eq!(result, false);
+        let result = is_small_gaps(&[1, 2, 6, 7]);
+        assert!(!result);
     }
 
     #[test]
     fn test_is_no_gap() {
-        let result = is_small_gaps(&vec![1, 2, 3, 3]);
-        assert_eq!(result, false);
+        let result = is_small_gaps(&[1, 2, 3, 3]);
+        assert!(!result);
     }
 }
