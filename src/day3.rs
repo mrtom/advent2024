@@ -14,7 +14,7 @@ fn parse_line(line: &str) -> i32 {
     })
     .sum();
 
-  return result;
+  result
 }
 
 fn parse_line_p2(line: &str) -> i32 {
@@ -26,19 +26,19 @@ fn parse_line_p2(line: &str) -> i32 {
   for caps in re.captures_iter(line) {
       let first = caps.get(1).map_or(0, |m| m.as_str().parse::<i32>().unwrap());
       let second = caps.get(2).map_or(0, |m| m.as_str().parse::<i32>().unwrap());
-      let is_dont = caps.get(3).map_or(false, |m| m.as_str().len() > 0);
-      let is_do = caps.get(4).map_or(false, |m| m.as_str().len() > 0);
+      let is_dont = caps.get(3).map_or(false, |m| !m.as_str().is_empty());
+      let is_do = caps.get(4).map_or(false, |m| !m.as_str().is_empty());
 
       if is_dont {
         should_multiply = false;
       } else if is_do {
         should_multiply = true;
       } else if should_multiply {
-          result += first * second;
+        result += first * second;
       }
   }
 
-  return result;
+  result
 }
 
 impl AOCDay for Day3 {
@@ -47,23 +47,23 @@ impl AOCDay for Day3 {
   }
   
   fn test_answer_part1(&self) -> String {
-    return "161".to_string();
+    "161".to_string()
   }
   
   fn test_answer_part2(&self) -> String {
-    return "48".to_string();
+    "48".to_string()
   }
   
   fn solve_part1(&self, input: &[String]) -> String {
-    return input.iter()
+    input.iter()
       .map(|line| parse_line(line))
       .sum::<i32>()
-      .to_string();
+      .to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
     let input_single_line = input.join("");
-    return parse_line_p2(&input_single_line).to_string();
+    parse_line_p2(&input_single_line).to_string()
   }
 }
 
