@@ -1,4 +1,6 @@
 
+use core::panic;
+
 use regex::Regex;
 
 use crate::AOCDay;
@@ -7,11 +9,14 @@ pub struct Day3 {}
 
 fn parse_line(line: &str) -> i32 {
   let re = Regex::new(r"mul\((\d+),(\d+)\)").unwrap();
-  let result: i32 = re.captures_iter(line)
-  .map(|caps| {
-    let first = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
-    let second = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
-    first * second
+  let result: i32 = re.captures_iter(line).map(|capture| {
+    let first = capture.get(1).map(|m| m.as_str().parse::<i32>());
+    let second = capture.get(2).map(|m| m.as_str().parse::<i32>());
+    if let (Some(Ok(first)), Some(Ok(second))) = (first, second) {
+      first * second
+    } else {
+      0
+    }
   })
   .sum();
   
@@ -24,18 +29,25 @@ fn parse_line_p2(line: &str) -> i32 {
   let mut result = 0;
   let mut should_multiply = true;
   
-  for caps in re.captures_iter(line) {
-    let first = caps.get(1).map_or(0, |m| m.as_str().parse::<i32>().unwrap());
-    let second = caps.get(2).map_or(0, |m| m.as_str().parse::<i32>().unwrap());
-    let is_dont = caps.get(3).map_or(false, |m| !m.as_str().is_empty());
-    let is_do = caps.get(4).map_or(false, |m| !m.as_str().is_empty());
-    
-    if is_dont {
-      should_multiply = false;
-    } else if is_do {
-      should_multiply = true;
-    } else if should_multiply {
-      result += first * second;
+  for capture in re.captures_iter(line) {
+    match (
+      capture.get(1).map(|m| m.as_str().parse::<i32>()), 
+      capture.get(2).map(|m| m.as_str().parse::<i32>()), 
+      capture.get(3).map(|m| m.as_str()), 
+      capture.get(4).map(|m| m.as_str())
+    ) {
+      (Some(first), Some(second), None, None) => {
+        if should_multiply {
+          if let (Ok(first), Ok(second)) = (first, second) {
+            result += first * second;
+          } else {
+            panic!("Error parsing integers");
+          }
+        }
+      }
+      (None, None, Some("don"), None) => should_multiply = false,
+      (None, None, None, Some("do")) => should_multiply = true,
+      _ => panic!("impossible"),
     }
   }
   
@@ -72,7 +84,7 @@ impl AOCDay for Day3 {
 mod tests {
   use super::*;
   use crate::utils::read_file;
-
+  
   #[test]
   fn test_parse_line() {
     assert_eq!(
@@ -97,7 +109,7 @@ mod tests {
       day.solve_part1(&read_file("input/day3/part1.txt"))
     );
   }
-
+  
   #[test]
   fn test_part_2() {
     let day = Day3 {};
