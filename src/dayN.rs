@@ -11,12 +11,12 @@ impl AOCDay for DayN {
   
   fn test_answer_part1(&self) -> String {
     panic!("Not implemented");
-    "FAIL".to_string();
+    "FAIL".to_string()
   }
   
   fn test_answer_part2(&self) -> String {
     panic!("Not implemented");
-  "FAIL".to_string();
+    "FAIL".to_string()
   }
   
   fn solve_part1(&self, input: &[String]) -> String {
