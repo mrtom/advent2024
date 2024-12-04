@@ -146,20 +146,20 @@ fn is_x_mas_from_pos(grid: &[Vec<String>], row_idx: usize, col_idx: usize) -> bo
     if letter_at_position(grid, (row, col)) != Some("A") {
       return false;
     }
-
+    
     let up_left = letter_in_direction(grid, (row, col), Direction::UpLeft);
     let up_right = letter_in_direction(grid, (row, col), Direction::UpRight);
     let down_left = letter_in_direction(grid, (row, col), Direction::DownLeft);
     let down_right = letter_in_direction(grid, (row, col), Direction::DownRight);
-
+    
     let first = up_left == Some("M") && down_right == Some("S")
-      || up_left == Some("S") && down_right == Some("M");
+    || up_left == Some("S") && down_right == Some("M");
     let second = up_right == Some("M") && down_left == Some("S")
-      || up_right == Some("S") && down_left == Some("M");
-
+    || up_right == Some("S") && down_left == Some("M");
+    
     return first && second;
   }
-
+  
   panic!("Impossible row or column index");
 }
 
@@ -193,17 +193,16 @@ impl AOCDay for Day4 {
   
   fn solve_part2(&self, input: &[String]) -> String {
     let grid = parse_input(input);
-
-    let mut count = 0;
-    grid.iter().enumerate().for_each(|(col_idx, line)| {
-      line.iter().enumerate().for_each(|(row_idx, _)| {
-        if is_x_mas_from_pos(&grid, row_idx, col_idx) { 
-          count += 1 
-        };
-      });
-    });
     
-    count.to_string()
+    grid.iter().enumerate().map(|(row_idx, line)| {
+      line.iter().enumerate().filter_map(|(col_idx, _)| {
+        if is_x_mas_from_pos(&grid, row_idx, col_idx) {
+          Some(1)
+        } else {
+          None
+        }
+      }).count()
+    }).sum::<usize>().to_string()
   }
 }
 
