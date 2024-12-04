@@ -1,6 +1,5 @@
 use std::string::ToString;
 use crate::AOCDay;
-use crate::utils::{isize_to_usize, usize_to_isize};
 
 pub struct Day4 {}
 
@@ -52,16 +51,41 @@ impl Direction {
   }
 }
 
-fn move_in_direction(direction: Direction, position: (isize, isize)) -> (isize, isize) {
+fn move_in_direction(direction: Direction, position: (usize, usize)) -> Option<(usize, usize)> {
   match direction {
-    Direction::Up => (position.0, position.1 - 1),
-    Direction::Down => (position.0, position.1 + 1),
-    Direction::Left => (position.0 - 1, position.1),
-    Direction::Right => (position.0 + 1, position.1),
-    Direction::UpLeft => (position.0 - 1, position.1 - 1),
-    Direction::UpRight => (position.0 + 1, position.1 - 1),
-    Direction::DownLeft => (position.0 - 1, position.1 + 1),
-    Direction::DownRight => (position.0 + 1, position.1 + 1),
+    Direction::Left => {
+      match position.1 {
+        0 => None,
+        _ => Some((position.0, position.1 - 1)),
+      }
+    },
+    Direction::Right => Some((position.0, position.1 + 1)),
+    Direction::Up => {
+      match position.0 {
+        0 => None,
+        _ => Some((position.0 - 1, position.1)),
+      }
+    },
+    Direction::Down => Some((position.0 + 1, position.1)),
+    Direction::UpLeft => {
+      match (position.0, position.1) {
+        (0, _) | (_, 0) => None,
+        _ => Some((position.0 - 1, position.1 - 1)),
+      }
+    },
+    Direction::DownLeft => {
+      match position.1 {
+        0 => None,
+        _ => Some((position.0 + 1, position.1 - 1)),
+      }
+    },
+    Direction::UpRight => {
+      match position.0 {
+        0 => None,
+        _ => Some((position.0 - 1, position.1 + 1)),
+      }
+    },
+    Direction::DownRight => Some((position.0 + 1, position.1 + 1)),
   }
 }
 
@@ -88,79 +112,71 @@ fn next_letter(letter: &str) -> &str {
   }
 }
 
-fn count_xmas_from_pos(grid: &[Vec<String>], row_idx: usize, col_idx: usize) -> i32 {
+fn count_xmas_from_pos(grid: &[Vec<String>], row_idx: usize, col_idx: usize) -> u32 {
   Direction::iter().map(|direction| {
-    if let (Some(row), Some(col)) = (usize_to_isize(row_idx), usize_to_isize(col_idx)) {
-      let mut position: (isize, isize) = (row, col);
-      let mut current_letter = "X";
+    let mut position = (row_idx, col_idx);
+    let mut current_letter = "X";
+    
+    loop {
+      let (row, col) = position;
+      // If out of bounds, return 0
+      // Note: Less than zero covered by the usize conversion
+      if row >= grid.len() || col >= grid.len() {
+        return 0;
+      }
       
-      loop {
-        if let (Some(row), Some(col)) = (isize_to_usize(position.0), isize_to_usize(position.1)) {
-          // If out of bounds, return 0
-          // Note: Less than zero covered by the usize conversion
-          if row >= grid.len() || col >= grid.len() {
-            return 0;
-          }
-          
-          // If current letter does not equal letter at position, return 0
-          if grid[row][col].as_str() != current_letter {
-            return 0;
-          }
-          
-          // If current letter is S we've found a match
-          if current_letter == "S" {
-            return 1;
-          }
-          
-          // Otherwise move in correct direction
-          position = move_in_direction(direction, position);
-          current_letter = next_letter(current_letter);      
-        } else {
-          return 0;
-        } 
-      } 
-    } else {
-      panic!("Impossible row or column index");
+      // If current letter does not equal letter at position, return 0
+      if grid[row][col].as_str() != current_letter {
+        return 0;
+      }
+      
+      // If current letter is S we've found a match
+      if current_letter == "S" {
+        return 1;
+      }
+      
+      // Otherwise move in correct direction
+      if let Some(new_position) = move_in_direction(direction, position) {
+        position = new_position;
+        current_letter = next_letter(current_letter);      
+      } else {
+        return  0;
+      }
     }
   }).sum()
 }
 
-fn letter_at_position(grid: &[Vec<String>], position: (isize, isize)) -> Option<&str> {
-  if let (Some(row), Some(col)) = (isize_to_usize(position.0), isize_to_usize(position.1)) {
-    if row >= grid.len() || col >= grid.len() {
-      return None;
-    }
-    Some(grid[row][col].as_str())
-  } else {
-    None
+fn letter_at_position(grid: &[Vec<String>], position: (usize, usize)) -> Option<&str> {
+  let (row, col) = position;
+  if row >= grid.len() || col >= grid.len() {
+    return None;
   }
+  Some(grid[row][col].as_str())
 }
 
-fn letter_in_direction(grid: &[Vec<String>], position: (isize, isize), direction: Direction) -> Option<&str> {
-  let new_position = move_in_direction(direction, position);
-  letter_at_position(grid, new_position)
+fn letter_in_direction(grid: &[Vec<String>], position: (usize, usize), direction: Direction) -> Option<&str> {
+  if let Some(new_position) = move_in_direction(direction, position) {
+    return letter_at_position(grid, new_position);
+  }
+  None
 }
 
-fn is_x_mas_from_pos(grid: &[Vec<String>], row_idx: usize, col_idx: usize) -> bool {
-  if let (Some(row), Some(col)) = (usize_to_isize(row_idx), usize_to_isize(col_idx)) {
-    if letter_at_position(grid, (row, col)) != Some("A") {
-      return false;
-    }
-    
-    let up_left = letter_in_direction(grid, (row, col), Direction::UpLeft);
-    let up_right = letter_in_direction(grid, (row, col), Direction::UpRight);
-    let down_left = letter_in_direction(grid, (row, col), Direction::DownLeft);
-    let down_right = letter_in_direction(grid, (row, col), Direction::DownRight);
-    
-    let first = up_left == Some("M") && down_right == Some("S")
-    || up_left == Some("S") && down_right == Some("M");
-    let second = up_right == Some("M") && down_left == Some("S")
-    || up_right == Some("S") && down_left == Some("M");
-    
-    return first && second;
+fn is_x_mas_from_pos(grid: &[Vec<String>], row: usize, col: usize) -> bool {
+  if letter_at_position(grid, (row, col)) != Some("A") {
+    return false;
   }
   
-  panic!("Impossible row or column index");
+  let up_left = letter_in_direction(grid, (row, col), Direction::UpLeft);
+  let up_right = letter_in_direction(grid, (row, col), Direction::UpRight);
+  let down_left = letter_in_direction(grid, (row, col), Direction::DownLeft);
+  let down_right = letter_in_direction(grid, (row, col), Direction::DownRight);
+  
+  let first = up_left == Some("M") && down_right == Some("S")
+  || up_left == Some("S") && down_right == Some("M");
+  let second = up_right == Some("M") && down_left == Some("S")
+  || up_right == Some("S") && down_left == Some("M");
+  
+  first && second
 }
 
 impl AOCDay for Day4 {
