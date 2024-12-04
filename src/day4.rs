@@ -1,9 +1,12 @@
 use std::string::ToString;
+use strum::IntoEnumIterator;
+use strum_macros::EnumIter; 
+
 use crate::AOCDay;
 
 pub struct Day4 {}
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, EnumIter)]
 enum Direction {
   Up,
   Down,
@@ -15,40 +18,19 @@ enum Direction {
   DownRight,
 }
 
-struct DirectionIter {
-  current: usize,
+fn letter_at_position(grid: &[Vec<String>], position: (usize, usize)) -> Option<&str> {
+  let (row, col) = position;
+  if row >= grid.len() || col >= grid.len() {
+    return None;
+  }
+  Some(grid[row][col].as_str())
 }
 
-impl DirectionIter {
-  fn new() -> Self {
-    DirectionIter { current: 0 }
+fn letter_in_direction(grid: &[Vec<String>], position: (usize, usize), direction: Direction) -> Option<&str> {
+  if let Some(new_position) = move_in_direction(direction, position) {
+    return letter_at_position(grid, new_position);
   }
-}
-
-impl Iterator for DirectionIter {
-  type Item = Direction;
-  
-  fn next(&mut self) -> Option<Self::Item> {
-    let direction = match self.current {
-      0 => Some(Direction::Up),
-      1 => Some(Direction::Down),
-      2 => Some(Direction::Left),
-      3 => Some(Direction::Right),
-      4 => Some(Direction::UpLeft),
-      5 => Some(Direction::UpRight),
-      6 => Some(Direction::DownLeft),
-      7 => Some(Direction::DownRight),
-      _ => None,
-    };
-    self.current += 1;
-    direction
-  }
-}
-
-impl Direction {
-  fn iter() -> DirectionIter {
-    DirectionIter::new()
-  }
+  None
 }
 
 fn move_in_direction(direction: Direction, position: (usize, usize)) -> Option<(usize, usize)> {
@@ -144,21 +126,6 @@ fn count_xmas_from_pos(grid: &[Vec<String>], row_idx: usize, col_idx: usize) -> 
       }
     }
   }).sum()
-}
-
-fn letter_at_position(grid: &[Vec<String>], position: (usize, usize)) -> Option<&str> {
-  let (row, col) = position;
-  if row >= grid.len() || col >= grid.len() {
-    return None;
-  }
-  Some(grid[row][col].as_str())
-}
-
-fn letter_in_direction(grid: &[Vec<String>], position: (usize, usize), direction: Direction) -> Option<&str> {
-  if let Some(new_position) = move_in_direction(direction, position) {
-    return letter_at_position(grid, new_position);
-  }
-  None
 }
 
 fn is_x_mas_from_pos(grid: &[Vec<String>], row: usize, col: usize) -> bool {

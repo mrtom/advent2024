@@ -10,3 +10,5 @@ clippy-pedantic = true
 
 [dependencies]
 regex = "1.10.3"
+strum = "0.26.3"
+strum_macros = "0.26.4"
