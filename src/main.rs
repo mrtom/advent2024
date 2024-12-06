@@ -4,6 +4,7 @@ mod day2;
 mod day3;
 mod day4;
 mod day5;
+mod day6;
 
 use std::path::Path;
 use utils::read_file;
@@ -12,7 +13,8 @@ use utils::read_file;
 // use day2::Day2;
 // use day3::Day3;
 // use day4::Day4;
-use day5::Day5;
+// use day5::Day5;
+use day6::Day6;
 
 pub trait AOCDay {
   fn name(&self) -> String;
@@ -64,11 +66,13 @@ fn main() {
   // let day2 = Day2 {};
   // let day3 = Day3 {};
   // let day4 = Day4 {};
-  let day5 = Day5 {};
+  // let day5 = Day5 {};
+  let day6 = Day6 {};
   
   // run_day(&day1);
   // run_day(&day2);
   // run_day(&day3);
   // run_day(&day4);
-  run_day(&day5);
+  // run_day(&day5);
+  run_day(&day6);
 }
