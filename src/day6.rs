@@ -32,36 +32,19 @@ impl Facing {
   }
 }
 
-#[derive(Debug, Clone)]
-struct Cell {
-  tile: Tile,
-  visited_dirns: Vec<Facing>,
-}
+type Map = Vec<Vec<Tile>>;
 
-type Map = Vec<Vec<Cell>>;
-
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 struct Location {
   row: usize,
   col: usize,
 }
 
-#[allow(clippy::manual_find)]
-fn find_duplicate<T: Eq + std::hash::Hash>(vec: &[T]) -> Option<&T> {
-  let mut seen = HashSet::new();
-  for item in vec {
-    if !seen.insert(item) {
-      return Some(item);
-    }
-  }
-  None
-}
-
 #[allow(dead_code)]
 fn print_map(map: &Map) {
   for row in map {
-    for cell in row {
-      match cell.tile {
+    for tile in row {
+      match tile {
         Tile::Starting => print!("^"),
         Tile::Empty => print!("."),
         Tile::Visited => print!("X"),
@@ -91,8 +74,8 @@ fn parse_input(input: &[String]) -> Map {
       result.push(
         trimmed_line_by_character
         .into_iter()
-        .map(|char| Cell { tile: tile_from_string(&char), visited_dirns: Vec::new() })
-        .collect::<Vec<Cell>>()
+        .map(|char| tile_from_string(&char))
+        .collect::<Vec<Tile>>()
       );
     }
   }
@@ -100,20 +83,14 @@ fn parse_input(input: &[String]) -> Map {
   result
 }
 
-fn get_cell(map: &Map, row: usize, col: usize) -> &Cell {
+fn get_tile(map: &Map, row: usize, col: usize) -> &Tile {
   match map.get(row) {
     Some(row) => row.get(col).expect("Invalid location"),
     None => panic!("Invalid location"),
   }
 }
 
-fn update_map(map: &mut Map, location: Location, facing: Facing) {
-  let cell = &mut map[location.row][location.col];
-  cell.tile = Tile::Visited;
-  cell.visited_dirns.push(facing);
-}
-
-fn next_location(map: &mut Map, location: Location, facing: Facing) -> Option<(Location, Facing)> {
+fn next_location(map: &Map, location: Location, facing: Facing) -> Option<(Location, Facing)> {
   let row = location.row; 
   let col = location.col;
   let max_row = map.len() - 1;
@@ -131,11 +108,10 @@ fn next_location(map: &mut Map, location: Location, facing: Facing) -> Option<(L
         Facing::Right => Location { row, col: col + 1 },
       };
 
-      let new_cell = get_cell(map, new_location.row, new_location.col);
-      match new_cell.tile {
+      let tile = get_tile(map, new_location.row, new_location.col);
+      match tile {
         Tile::Obstacle => Some((location, facing.turn_clockwise())),
         Tile::Empty | Tile::Visited | Tile::Starting => {
-          update_map(map, new_location, facing);
           Some((new_location, facing))
         },
       }
@@ -145,8 +121,8 @@ fn next_location(map: &mut Map, location: Location, facing: Facing) -> Option<(L
 
 fn find_starting_location(map: &Map) -> Location {
   for (row_index, row) in map.iter().enumerate() {
-    for (col_index, cell) in row.iter().enumerate() {
-      if cell.tile == Tile::Starting {
+    for (col_index, tile) in row.iter().enumerate() {
+      if *tile == Tile::Starting {
         return Location { row: row_index, col: col_index };
       }
     }
@@ -154,11 +130,12 @@ fn find_starting_location(map: &Map) -> Location {
   panic!("No starting location found");
 }
 
-fn run_simulation(map: &mut Map, location: Location, facing: Facing) -> &Map {
-  let mut current_location = location;
+fn run_simulation(map: &Map, starting_location: Location, facing: Facing) -> HashSet<Location> {
+  let mut current_location = starting_location;
   let mut current_facing = facing;
 
-  map[location.row][location.col] = Cell { tile: Tile::Visited, visited_dirns: vec![facing] };
+  let mut visited = HashSet::new();
+  visited.insert((starting_location, facing));
 
   loop {
     let next = next_location(map, current_location, current_facing);
@@ -166,19 +143,21 @@ fn run_simulation(map: &mut Map, location: Location, facing: Facing) -> &Map {
       Some(( new_location, new_facing)) => {
         current_location = new_location;
         current_facing = new_facing;
+        visited.insert((new_location, new_facing));
       },
       None => break,
     }
   }
 
-  map
+  visited.iter().map(|(location, _)| * location).collect()
 }
 
-fn contains_loop(map: &mut Map, location: Location, facing: Facing) -> bool {
-  let mut current_location = location;
+fn contains_loop(map: &Map, starting_location: Location, facing: Facing) -> bool {
+  let mut current_location = starting_location;
   let mut current_facing = facing;
 
-  map[location.row][location.col] = Cell { tile: Tile::Visited, visited_dirns: vec![facing] };
+  let mut visited = HashSet::new();
+  visited.insert((starting_location, facing));
 
   loop {
     let next = next_location(map, current_location, current_facing);
@@ -187,8 +166,7 @@ fn contains_loop(map: &mut Map, location: Location, facing: Facing) -> bool {
         current_location = new_location;
         current_facing = new_facing;
 
-        let visited_dirns = &get_cell(map, new_location.row, new_location.col).visited_dirns;
-        if let Some(_location) = find_duplicate(visited_dirns) {
+        if !visited.insert((new_location, new_facing)) {
           return true;
         }
       },
@@ -213,42 +191,23 @@ impl AOCDay for Day6 {
   }
   
   fn solve_part1(&self, input: &[String]) -> String {
-    let mut map = parse_input(input);
+    let map = parse_input(input);
     let starting_location = find_starting_location(&map);
     
-    run_simulation(&mut map, starting_location, Facing::Up);
-
-    let visited = map.iter().flatten().filter(|cell| cell.tile == Tile::Visited).count();
-    visited.to_string()
+    let visited = run_simulation(&map, starting_location, Facing::Up);
+    visited.len().to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
-    let starting_map = parse_input(input);
-    let starting_location = find_starting_location(&starting_map);
+    let map = parse_input(input);
+    let starting_location = find_starting_location(&map);
     
-    let mut map = starting_map.clone();
-    run_simulation(&mut map, starting_location, Facing::Up);
+    let visited_ids = run_simulation(&map, starting_location, Facing::Up);
 
-    let visited_idxs = map
-    .iter()
-    .enumerate()
-    .flat_map(|(row_idx, row)|{
-      row
-      .iter()
-      .enumerate()
-      .filter_map(move |(col_idx, cell)| {
-        if cell.tile == Tile::Visited {
-          Some(Location { row: row_idx, col: col_idx })
-        } else {
-          None
-        }
-      })
-    });
-
-    let count = visited_idxs.filter(|location| {
-      let mut inner_map = starting_map.clone();
-      inner_map[location.row][location.col].tile = Tile::Obstacle;
-      contains_loop(&mut inner_map, starting_location, Facing::Up)
+    let count = visited_ids.iter().filter(|location| {
+      let mut inner_map = map.clone();
+      inner_map[location.row][location.col] = Tile::Obstacle;
+      contains_loop(&inner_map, starting_location, Facing::Up)
     }).count();
 
     count.to_string()
