@@ -9,11 +9,30 @@ fn parse_input(input: &[String]) -> (Vec<i32>, Vec<i32>) {
   let mut second: Vec<i32> = Vec::new();
 
   for line in input {
-    let re = Regex::new(r"(\d+)\s+(\d+)").unwrap();
-    let caps = re.captures(line).unwrap();
+    let re = match Regex::new(r"(\d+)\s+(\d+)") {
+      Ok(re) => re,
+      Err(msg) => panic!("Failed to create regex: {msg}"),
+    };
 
-    let left = caps.get(1).unwrap().as_str().parse::<i32>().unwrap();
-    let right = caps.get(2).unwrap().as_str().parse::<i32>().unwrap();
+    let Some(caps) = re.captures(line) else {
+      panic!("Failed to match regex");
+    };
+
+    let left = match caps.get(1) {
+      Some(m) => match m.as_str().parse::<i32>() {
+        Ok(num) => num,
+        Err(msg) => panic!("Failed to parse left number, {msg}"),
+      },
+      None => panic!("Failed to get left capture group"),
+    };
+
+    let right = match caps.get(2) {
+      Some(m) => match m.as_str().parse::<i32>() {
+        Ok(num) => num,
+        Err(msg) => panic!("Failed to parse right number: {msg}"),
+      },
+      None => panic!("Failed to get right capture group"),
+    };
 
     first.push(left);
     second.push(right);
@@ -56,7 +75,10 @@ impl AOCDay for Day1 {
     let result: i32 = first
       .iter()
       .map(|&x| {
-        let count = i32::try_from(second.iter().filter(|&y| *y == x).count()).unwrap();
+        let count = match i32::try_from(second.iter().filter(|&y| *y == x).count()) {
+          Ok(count) => count,
+          Err(msg) => panic!("Failed to convert count to i32: {msg}"),
+        };
         x * count
       })
       .sum();
