@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use strum_macros::EnumIter; 
+use strum_macros::EnumIter;
 
 use crate::AOCDay;
 
@@ -60,26 +60,30 @@ fn tile_from_string(string: &str) -> Tile {
     "." => Tile::Empty,
     "^" => Tile::Starting,
     "#" => Tile::Obstacle,
-    _ => panic!("Unexpected input")
+    _ => panic!("Unexpected input"),
   }
 }
 
 fn parse_input(input: &[String]) -> Map {
   let mut result: Map = Map::new();
-  
+
   for line in input {
     if !line.is_empty() {
-      let line_by_character = line.clone().split("").map(ToString::to_string).collect::<Vec<String>>();
-      let trimmed_line_by_character = line_by_character[1..line_by_character.len()-1].to_vec();            
+      let line_by_character = line
+        .clone()
+        .split("")
+        .map(ToString::to_string)
+        .collect::<Vec<String>>();
+      let trimmed_line_by_character = line_by_character[1..line_by_character.len() - 1].to_vec();
       result.push(
         trimmed_line_by_character
-        .into_iter()
-        .map(|char| tile_from_string(&char))
-        .collect::<Vec<Tile>>()
+          .into_iter()
+          .map(|char| tile_from_string(&char))
+          .collect::<Vec<Tile>>(),
       );
     }
   }
-  
+
   result
 }
 
@@ -91,7 +95,7 @@ fn get_tile(map: &Map, row: usize, col: usize) -> &Tile {
 }
 
 fn next_location(map: &Map, location: Location, facing: Facing) -> Option<(Location, Facing)> {
-  let row = location.row; 
+  let row = location.row;
   let col = location.col;
   let max_row = map.len() - 1;
   let max_col = map[0].len() - 1;
@@ -111,11 +115,9 @@ fn next_location(map: &Map, location: Location, facing: Facing) -> Option<(Locat
       let tile = get_tile(map, new_location.row, new_location.col);
       match tile {
         Tile::Obstacle => Some((location, facing.turn_clockwise())),
-        Tile::Empty | Tile::Visited | Tile::Starting => {
-          Some((new_location, facing))
-        },
+        Tile::Empty | Tile::Visited | Tile::Starting => Some((new_location, facing)),
       }
-    },
+    }
   }
 }
 
@@ -123,7 +125,10 @@ fn find_starting_location(map: &Map) -> Location {
   for (row_index, row) in map.iter().enumerate() {
     for (col_index, tile) in row.iter().enumerate() {
       if *tile == Tile::Starting {
-        return Location { row: row_index, col: col_index };
+        return Location {
+          row: row_index,
+          col: col_index,
+        };
       }
     }
   }
@@ -140,16 +145,16 @@ fn run_simulation(map: &Map, starting_location: Location, facing: Facing) -> Has
   loop {
     let next = next_location(map, current_location, current_facing);
     match next {
-      Some(( new_location, new_facing)) => {
+      Some((new_location, new_facing)) => {
         current_location = new_location;
         current_facing = new_facing;
         visited.insert((new_location, new_facing));
-      },
+      }
       None => break,
     }
   }
 
-  visited.iter().map(|(location, _)| * location).collect()
+  visited.iter().map(|(location, _)| *location).collect()
 }
 
 fn contains_loop(map: &Map, starting_location: Location, facing: Facing) -> bool {
@@ -162,14 +167,14 @@ fn contains_loop(map: &Map, starting_location: Location, facing: Facing) -> bool
   loop {
     let next = next_location(map, current_location, current_facing);
     match next {
-      Some(( new_location, new_facing)) => {
+      Some((new_location, new_facing)) => {
         current_location = new_location;
         current_facing = new_facing;
 
         if !visited.insert((new_location, new_facing)) {
           return true;
         }
-      },
+      }
       None => break,
     }
   }
@@ -181,34 +186,37 @@ impl AOCDay for Day6 {
   fn name(&self) -> String {
     "day6".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     "41".to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     "6".to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let map = parse_input(input);
     let starting_location = find_starting_location(&map);
-    
+
     let visited = run_simulation(&map, starting_location, Facing::Up);
     visited.len().to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let map = parse_input(input);
     let starting_location = find_starting_location(&map);
-    
+
     let visited_ids = run_simulation(&map, starting_location, Facing::Up);
 
-    let count = visited_ids.iter().filter(|location| {
-      let mut inner_map = map.clone();
-      inner_map[location.row][location.col] = Tile::Obstacle;
-      contains_loop(&inner_map, starting_location, Facing::Up)
-    }).count();
+    let count = visited_ids
+      .iter()
+      .filter(|location| {
+        let mut inner_map = map.clone();
+        inner_map[location.row][location.col] = Tile::Obstacle;
+        contains_loop(&inner_map, starting_location, Facing::Up)
+      })
+      .count();
 
     count.to_string()
   }
@@ -216,24 +224,18 @@ impl AOCDay for Day6 {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-    use crate::utils::read_file;
+  use super::*;
+  use crate::utils::read_file;
 
-    #[test]
+  #[test]
   fn test_part_1() {
     let day = Day6 {};
-    assert_eq!(
-      "4663",
-      day.solve_part1(&read_file("input/day6/part1.txt"))
-    );
+    assert_eq!("4663", day.solve_part1(&read_file("input/day6/part1.txt")));
   }
 
   #[test]
   fn test_part_2() {
     let day = Day6 {};
-    assert_eq!(
-      "1530",
-      day.solve_part2(&read_file("input/day6/part1.txt"))
-    );
+    assert_eq!("1530", day.solve_part2(&read_file("input/day6/part1.txt")));
   }
 }
