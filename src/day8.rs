@@ -2,6 +2,9 @@ use crate::AOCDay;
 
 use std::collections::HashSet;
 
+const PART_1_EXAMPLE: &str = "14";
+const PART_2_EXAMPLE: &str = "34";
+
 #[derive(Debug, Copy, Clone)]
 struct Antenna {
   row: usize,
@@ -209,9 +212,27 @@ mod tests {
   use crate::utils::read_file;
 
   #[test]
+  fn test_part_1_example() {
+    let day = Day8 {};
+    assert_eq!(
+      PART_1_EXAMPLE,
+      day.solve_part1(&read_file("input/day8/test1.txt"))
+    );
+  }
+
+  #[test]
   fn test_part_1() {
     let day = Day8 {};
     assert_eq!("359", day.solve_part1(&read_file("input/day8/part1.txt")));
+  }
+
+  #[test]
+  fn test_part_2_example() {
+    let day = Day8 {};
+    assert_eq!(
+      PART_2_EXAMPLE,
+      day.solve_part2(&read_file("input/day8/test1.txt"))
+    );
   }
 
   #[test]
