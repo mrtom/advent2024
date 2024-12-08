@@ -31,7 +31,6 @@ pub trait AOCDay {
 
 fn run_day(day: &impl AOCDay) {
   println!("Running {}", day.name());
-  let start = std::time::Instant::now();
 
   let test_data_1_name = &format!("input/{}/test1.txt", day.name());
   let input_1_name = &format!("input/{}/part1.txt", day.name());
@@ -72,10 +71,11 @@ fn run_day(day: &impl AOCDay) {
   } else {
     println!("Part 1 Test Failed");
   }
-  eprintln!("{:?}", start.elapsed());
 }
 
 fn main() {
+  let start = std::time::Instant::now();
+
   // let day1 = Day1 {};
   // let day2 = Day2 {};
   // let day3 = Day3 {};
@@ -93,4 +93,6 @@ fn main() {
   // run_day(&day6);
   // run_day(&day7);
   run_day(&day8);
+
+  eprintln!("{:?}", start.elapsed());
 }
