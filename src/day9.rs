@@ -20,7 +20,7 @@ struct Block {
 
 fn parse_input(input: &[String]) -> Vec<Block> {
   let line = &input[0];
-  line.chars().map(|char| format!("{char}").parse::<usize>().unwrap()).enumerate().map(|(idx, value)| {
+  line.chars().map(|char| char.to_string().parse::<usize>().unwrap()).enumerate().map(|(idx, value)| {
     if idx % 2 == 0 {
       Block {
         id: idx / 2,
@@ -49,6 +49,15 @@ fn expand(input: &[Block]) -> Vec<usize> {
     output.resize(output.len() + block.length, value);
   }
   output
+}
+
+fn calculate_answer(input: &[usize]) -> usize {
+  input.iter().enumerate().map(|(idx, value)| {
+    match value {
+     &v if v == MARKER => 0,
+      _ => idx * value
+    }
+  }).sum()
 }
 
 pub struct Day9 {}
@@ -80,14 +89,7 @@ impl AOCDay for Day9 {
       last_file_block = expanded.iter().rposition(|&v| v != MARKER).unwrap();
     }
 
-    let result: usize = expanded.iter().enumerate().map(|(idx, value)| {
-      match value {
-       &v if v == MARKER => 0,
-        _ => idx * value
-      }
-    }).collect::<Vec<usize>>().iter().sum();
-
-    result.to_string()
+    calculate_answer(&expanded).to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
@@ -126,13 +128,7 @@ impl AOCDay for Day9 {
     }
 
     let expanded = expand(&input);
-    let result: usize = expanded.iter().enumerate().map(|(idx, value)| {
-      match value {
-       &v if v == MARKER => 0,
-        _ => idx * value
-      }
-    }).collect::<Vec<usize>>().iter().sum();
-    result.to_string()
+    calculate_answer(&expanded).to_string()
   }
 }
 
@@ -141,12 +137,6 @@ mod tests {
   use super::*;
   use crate::utils::read_file;
   
-  #[test]
-  fn test_something() {
-    let result = "";
-    assert_eq!(result, "");
-  }
-
   #[test]
   fn test_part_1_example() {
     let day = Day9 {};
