@@ -79,14 +79,19 @@ impl AOCDay for Day9 {
     let input = parse_input(input);
     let mut expanded = expand(&input);
 
-    let mut first_free_block = expanded.iter().position(|&v| v == MARKER).unwrap();
-    let mut last_file_block = expanded.iter().rposition(|&v| v != MARKER).unwrap();
-    while first_free_block < last_file_block {
-      expanded[first_free_block] = expanded[last_file_block];
-      expanded[last_file_block] = MARKER;
+    let mut first_free_block_idx = expanded.iter().position(|&block| block == MARKER).unwrap();
+    let mut last_file_block_idx = expanded.iter().rposition(|&block| block != MARKER).unwrap();
 
-      first_free_block = expanded.iter().position(|&v| v == MARKER).unwrap();
-      last_file_block = expanded.iter().rposition(|&v| v != MARKER).unwrap();
+    while first_free_block_idx < last_file_block_idx {
+      expanded[first_free_block_idx] = expanded[last_file_block_idx];
+      expanded[last_file_block_idx] = MARKER;
+
+      while expanded[first_free_block_idx] != MARKER {
+        first_free_block_idx += 1;
+      }
+      while expanded[last_file_block_idx] == MARKER {
+        last_file_block_idx -= 1;
+      }
     }
 
     calculate_answer(&expanded).to_string()
