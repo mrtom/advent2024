@@ -15,6 +15,7 @@ struct Block {
   id: usize,
   length: usize,
   r#type: BlockType,
+  compacted: bool,
 }
 
 fn parse_input(input: &[String]) -> Vec<Block> {
@@ -24,12 +25,15 @@ fn parse_input(input: &[String]) -> Vec<Block> {
       Block {
         id: idx / 2,
         length: value,
-        r#type:  BlockType::File,      }
+        r#type:  BlockType::File,      
+        compacted: false,
+      }
     } else {
       Block {
-        id: 0, // TODO: Not needed
+        id: 0,
         length: value,
         r#type: BlockType::FreeSpace,
+        compacted: false,
       }
     }
   }).collect()
@@ -87,8 +91,48 @@ impl AOCDay for Day9 {
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
-    let input = parse_input(input);
-    "Not implemented".to_string()
+    let mut input = parse_input(input);
+
+    loop {
+      match input.iter().rposition(|block| block.r#type == BlockType::File && !block.compacted) {
+        None => break,
+        Some(last_file_block_idx) => {
+          input[last_file_block_idx].compacted = true;
+
+          match input.iter().position(|block| block.r#type == BlockType::FreeSpace && block.length >=  input[last_file_block_idx].length) {
+            None => {},
+            Some(first_free_block_idx) => {
+              if first_free_block_idx < last_file_block_idx {
+                input.swap(first_free_block_idx, last_file_block_idx);
+
+                let new_free_block_idx = last_file_block_idx;
+                let new_file_block_idx = first_free_block_idx;
+
+                if input[new_free_block_idx].length > input[new_file_block_idx].length {
+                  let remaining_free_block = Block {
+                    id: 0,
+                    length: input[new_free_block_idx].length - input[new_file_block_idx].length,
+                    r#type: BlockType::FreeSpace,
+                    compacted: false,
+                  };
+                  input[new_free_block_idx].length = input[new_file_block_idx].length;
+                  input.insert(first_free_block_idx + 1, remaining_free_block);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    let expanded = expand(&input);
+    let result: usize = expanded.iter().enumerate().map(|(idx, value)| {
+      match value {
+       &v if v == MARKER => 0,
+        _ => idx * value
+      }
+    }).collect::<Vec<usize>>().iter().sum();
+    result.to_string()
   }
 }
 
@@ -134,7 +178,7 @@ mod tests {
   fn test_part_2() {
     let day = Day9 {};
     assert_eq!(
-      "TODO",
+      "6311837662089",
       day.solve_part2(&read_file("input/day9/part1.txt"))
     );
   }

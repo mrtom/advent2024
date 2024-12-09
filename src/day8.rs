@@ -148,11 +148,11 @@ impl AOCDay for Day8 {
   }
 
   fn test_answer_part1(&self) -> String {
-    "14".to_string()
+    PART_1_EXAMPLE.to_string()
   }
 
   fn test_answer_part2(&self) -> String {
-    "34".to_string()
+    PART_2_EXAMPLE.to_string()
   }
 
   fn solve_part1(&self, input: &[String]) -> String {

@@ -45,8 +45,10 @@ fn run_day(day: &impl AOCDay) {
   let test1 = day.solve_part1(&test_data1);
   if test1 == day.test_answer_part1() {
     println!("Part 1 Test Passed, attemtping to solve");
+    let start_part_1 = std::time::Instant::now();
     let answer1 = day.solve_part1(&input_data1);
     println!("Part 1: {answer1}");
+    println!("{:?}", start_part_1.elapsed());
 
     let test_data_name = if Path::new(test_data_2_name).exists() {
       test_data_2_name
@@ -65,8 +67,10 @@ fn run_day(day: &impl AOCDay) {
     let test2 = day.solve_part2(&test_data2);
     if test2 == day.test_answer_part2() {
       println!("Part 2 Test Passed, attemtping to solve");
+      let start_part_2 = std::time::Instant::now();
       let answer2 = day.solve_part2(&input_data2);
       println!("Part 2: {answer2}");
+      println!("{:?}", start_part_2.elapsed());
     } else {
       println!("Part 2 Test Failed");
     }
