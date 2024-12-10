@@ -5,15 +5,13 @@ use crate::AOCDay;
 const PART_1_EXAMPLE: &str = "36";
 const PART_2_EXAMPLE: &str = "81";
 
-type Map = Vec<Vec<i32>>;
+type Map = Vec<Vec<u32>>;
 type Position = (usize, usize);
 
-fn parse_line(line: &str) -> Vec<i32> {
-  line.chars().map(|char| char.to_string().parse::<i32>().unwrap_or(-1)).collect::<Vec<i32>>()
-}
-
-fn parse_input(input: &[String]) -> Vec<Vec<i32>> {
-  input.iter().map(| str | parse_line(str)).collect::<Vec<Vec<i32>>>()
+fn parse_input(input: &[String]) -> Vec<Vec<u32>> {
+  input.iter().map(
+    | str | str.chars().map(|char| char.to_digit(10).unwrap_or(u32::MAX)).collect::<Vec<u32>>()
+  ).collect::<Vec<Vec<u32>>>()
 }
 
 fn find_valid_neighbours(map: &Map, current_position: Position, previous_position: Position) -> Vec<Position> {
