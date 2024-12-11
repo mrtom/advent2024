@@ -1,31 +1,54 @@
 use crate::AOCDay;
+use std::collections::HashMap;
 
 const PART_1_EXAMPLE: &str = "55312";
-const PART_2_EXAMPLE: &str = "FAIL";
+const PART_2_EXAMPLE: &str = "65601038650482";
 
-fn parse_input(input: &str) -> Vec<&str> {
-  input.split(' ').collect()
+fn parse_input(input: &str) -> Vec<usize> {
+  input.split(' ').map(|s| s.parse().unwrap()).collect()
 }
 
-fn apply_rules(input: &mut Vec<&str>) {
-  let original_last_idx = input.len() - 1;
-  for i in 0..input.len() {
-    let idx = original_last_idx - i;
-    match input[idx] {
-      "0" => input[idx] = "1",
-      value if value.len() % 2 == 0 => {
-        let (left, right) = value.split_at(value.len() / 2);
-        let parsed_right = right.parse::<u64>().unwrap();
-        input[idx] = left;
-        input.insert(idx + 1,  Box::leak(u64::to_string(&parsed_right).into_boxed_str()));
-      },
-      value => {
-        let new_value = value.parse::<u64>().unwrap() * 2024;
-        let new_value_str = u64::to_string(&new_value);
-        input[idx] = Box::leak(new_value_str.into_boxed_str()); // TODO
+fn apply_rules(rock: usize) -> (usize, Option<usize>) {
+  match rock {
+    0 => (1, None),
+    value => {
+      let as_str = value.to_string();
+      if as_str.len() % 2 == 0 {
+        let (left, right) = as_str.split_at(as_str.len() / 2);
+        (left.parse().unwrap(), Some(right.parse().unwrap()))
+      } else {
+        (value * 2024, None)
       }
     }
   }
+}
+
+fn blink(input: &mut Vec<usize>) {
+  let original_last_idx = input.len() - 1;
+  for i in 0..input.len() {
+    let idx = original_last_idx - i;
+    let (left, right) = apply_rules(input[idx]);
+    input[idx] = left;
+    if let Some(new_rock) = right {
+      input.insert(idx + 1, new_rock);
+    }
+  }
+}
+
+fn blink_part2(map: &HashMap<usize, usize>) -> HashMap<usize, usize> {
+  let mut new_map = HashMap::new();
+
+  for (rock, count) in map {
+    let (left, right) = apply_rules(*rock);
+
+    *new_map.entry(left).or_insert(0) += count;
+
+    if let Some(new_rock) = right {
+      *new_map.entry(new_rock).or_insert(0) += count;
+    }
+  }
+
+  new_map
 }
 
 pub struct Day11 {}
@@ -46,14 +69,21 @@ impl AOCDay for Day11 {
   fn solve_part1(&self, input: &[String]) -> String {
     let mut input = parse_input(&input[0]);
     for _ in 0..25 {
-      apply_rules(&mut input);
+      blink(&mut input);
     }
     input.len().to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
     let input = parse_input(&input[0]);
-    "Not implemented".to_string()
+    let mut map: HashMap<usize, usize> = input.iter().map(|value| (*value, 1)).collect();
+
+    for _ in 0..75 {
+      map = blink_part2(&map);
+    }
+
+    let result = map.values().sum::<usize>();
+    result.to_string()
   }
 }
 
@@ -62,12 +92,6 @@ mod tests {
   use super::*;
   use crate::utils::read_file;
   
-  #[test]
-  fn test_something() {
-    let result = "";
-    assert_eq!(result, "");
-  }
-
   #[test]
   fn test_part_1_example() {
     let day = Day11 {};
@@ -99,7 +123,7 @@ mod tests {
   fn test_part_2() {
     let day = Day11 {};
     assert_eq!(
-      "TODO",
+      "259593838049805",
       day.solve_part2(&read_file("input/day11/part1.txt"))
     );
   }
