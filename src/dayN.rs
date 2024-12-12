@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+use strum_macros::EnumIter;
 use regex::Regex;
 
 use crate::AOCDay;
@@ -39,12 +41,6 @@ impl AOCDay for DayN {
 mod tests {
   use super::*;
   use crate::utils::read_file;
-  
-  #[test]
-  fn test_something() {
-    let result = "";
-    assert_eq!(result, "");
-  }
 
   #[test]
   fn test_part_1_example() {
