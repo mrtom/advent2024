@@ -4,7 +4,7 @@ use regex::Regex;
 use crate::AOCDay;
 
 const PART_1_EXAMPLE: &str = "480";
-const PART_2_EXAMPLE: &str = "FAIL";
+const PART_2_EXAMPLE: &str = "875318608908";
 
 struct Button {
   x_const: isize,
@@ -22,7 +22,7 @@ struct Machine {
   prize: Prize,
 }
 
-fn build_machine(input: &str) -> Machine {
+fn build_machine(input: &str, is_part_two: bool) -> Machine {
   let machine_input = input.split('_').collect::<Vec<&str>>();
   let (
     a_input, 
@@ -36,6 +36,11 @@ fn build_machine(input: &str) -> Machine {
   let capture_a = button_regex.captures(a_input);
   let capture_b = button_regex.captures(b_input);
   let capture_prize = prize_regex.captures(prize_input);
+
+  let extra: isize = match is_part_two {
+    true => 10_000_000_000_000,
+    false => 0,
+  };
 
   match (capture_a, capture_b, capture_prize) {
     (Some(cap_a), Some(cap_b), Some(cap_prize)) => {
@@ -56,59 +61,18 @@ fn build_machine(input: &str) -> Machine {
           y_const: b_y,
         },
         prize: Prize {
-          x: prize_x,
-          y: prize_y,
+          x: prize_x + extra,
+          y: prize_y + extra,
         }
       }
     },
     (_, _, _) => {
-      panic!("Could not parse machien input");
+      panic!("Could not parse machine input");
     }
   }
 }
 
-// fn make_move(machine: &Machine, remaining: (isize, isize), button_a_count: isize, button_b_count: isize, valid_turns: &mut HashSet<(isize, isize)>) {
-//   if remaining.0 == 0 && remaining.1 == 0 {
-//     valid_turns.insert((button_a_count, button_b_count));
-//   }
-
-//   if button_a_count + button_b_count > 100 {
-//     return
-//   }
-
-//   // Push A Button
-//   if remaining.0 > machine.button_A.x_const && remaining.1 > machine.button_A.y_const {
-//     make_move(
-//       machine,
-//       (remaining.0 - machine.button_A.x_const, remaining.1 - machine.button_A.y_const),
-//       button_a_count + 1,
-//       button_b_count,
-//       valid_turns,
-//     );
-//   }
-
-//   // Push B Button
-//   if remaining.0 > machine.button_B.x_const && remaining.1 > machine.button_B.y_const {
-//     make_move(
-//       machine,
-//       (remaining.0 - machine.button_B.x_const, remaining.1 - machine.button_B.y_const),
-//       button_a_count,
-//       button_b_count + 1,
-//       valid_turns,
-//     );
-//   }
-// }
-
-
-// fn valid_turns(machine: &Machine) -> HashSet<(isize, isize)> {
-//   let mut results = HashSet::new();
-//   let remaining = (machine.prize.x, machine.prize.y);
-
-//   make_move(machine, remaining, 0, 0, &mut results);
-
-//   results
-// }
-
+#[allow(clippy::similar_names)]
 fn solve_for(machine: &Machine) -> isize {
   let button_a = &machine.button_a;
   let button_b = &machine.button_b;
@@ -119,37 +83,23 @@ fn solve_for(machine: &Machine) -> isize {
     return 0
   }
 
-  if (prize.x * button_b.y_const - prize.y * button_b.x_const) % determinent != 0 {
+  let button_a_numerator = prize.x * button_b.y_const - prize.y * button_b.x_const;
+  let button_b_numerator = button_a.x_const * prize.y - button_a.y_const * prize.x;
+  if button_a_numerator % determinent != 0 ||  button_b_numerator % determinent != 0 {
     return 0
   }
 
-  if (button_a.x_const * prize.y - button_a.y_const * prize.x) % determinent != 0 {
-    return 0
-  }
-
-  let button_a_pushes = (prize.x * button_b.y_const - prize.y * button_b.x_const) / determinent;
-  let button_b_pushes = (button_a.x_const * prize.y - button_a.y_const * prize.x) / determinent;
-  
-  // a1x + b1y = c1
-  // a1: button_A.x_const
-  // b1: button_B.x_const
-  // c1: prize.x
-  // x: button_a_pushes
-  // y: button_b_pushes
-
-  // a2x + b2y = c2
-  // a2: button_A.y_const
-  // b2: button_B.y_const
-  // c2: prize.y
+  let button_a_pushes = button_a_numerator / determinent;
+  let button_b_pushes = button_b_numerator / determinent;
 
   button_a_pushes * 3 + button_b_pushes
 }
 
-fn parse_input(input: &[String]) -> Vec<Machine> {
+fn parse_input(input: &[String], is_part_two: bool) -> Vec<Machine> {
   let combined = input.iter().join("_");
 
   combined.split("__").map(|machine_input| {
-    build_machine(machine_input)
+    build_machine(machine_input, is_part_two)
   }).collect::<Vec<Machine>>()
 }
 
@@ -169,16 +119,20 @@ impl AOCDay for Day13 {
   }
   
   fn solve_part1(&self, input: &[String]) -> String {
-    let machines = parse_input(input);
+    let machines = parse_input(input, false);
     machines.iter().map(|machine| {
-      // valid_turns(machine).iter().map(|(a, b)| 3 * a + b).min().unwrap()
       solve_for(machine)
     }).sum::<isize>().to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
-    let input = parse_input(input);
-    "Not implemented".to_string()
+    let machines = parse_input(input, true);
+
+    let answer = machines.iter().map(|machine| {
+      solve_for(machine)
+    }).sum::<isize>();
+
+    answer.to_string()
   }
 }
 
@@ -218,7 +172,7 @@ mod tests {
   fn test_part_2() {
     let day = Day13 {};
     assert_eq!(
-      "TODO",
+      "92572057880885",
       day.solve_part2(&read_file("input/day13/part1.txt"))
     );
   }
