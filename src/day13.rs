@@ -22,7 +22,19 @@ struct Machine {
   prize: Prize,
 }
 
+fn parse_input(input: &[String], is_part_two: bool) -> Vec<Machine> {
+  let combined = input.iter().join("_");
+
+  combined.split("__").map(|machine_input| {
+    build_machine(machine_input, is_part_two)
+  }).collect::<Vec<Machine>>()
+}
+
 fn build_machine(input: &str, is_part_two: bool) -> Machine {
+  let button_regex = Regex::new(r"Button (A|B): X\+(\d+), Y\+(\d+)").unwrap();
+  let prize_regex = Regex::new(r"Prize: X=(\d+), Y=(\d+)").unwrap();
+  let extra: isize = if is_part_two { 10_000_000_000_000 } else { 0 };
+
   let machine_input = input.split('_').collect::<Vec<&str>>();
   let (
     a_input, 
@@ -30,44 +42,33 @@ fn build_machine(input: &str, is_part_two: bool) -> Machine {
     prize_input
   ) = (machine_input[0], machine_input[1], machine_input[2]);
 
-  let button_regex = Regex::new(r"Button (A|B): X\+(\d+), Y\+(\d+)").unwrap();
-  let prize_regex = Regex::new(r"Prize: X=(\d+), Y=(\d+)").unwrap();
-
   let capture_a = button_regex.captures(a_input);
   let capture_b = button_regex.captures(b_input);
   let capture_prize = prize_regex.captures(prize_input);
 
-  let extra: isize = match is_part_two {
-    true => 10_000_000_000_000,
-    false => 0,
-  };
+  let cap_a = capture_a.expect("Could not parse capture_a");
+  let cap_b = capture_b.expect("Could not parse capture_b");
+  let cap_prize = capture_prize.expect("Could not parse capture_prize");
 
-  match (capture_a, capture_b, capture_prize) {
-    (Some(cap_a), Some(cap_b), Some(cap_prize)) => {
-      let a_x = cap_a.get(2).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
-      let a_y = cap_a.get(3).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
-      let b_x = cap_b.get(2).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
-      let b_y = cap_b.get(3).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
-      let prize_x = cap_prize.get(1).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
-      let prize_y = cap_prize.get(2).map(|m| m.as_str().parse::<isize>()).unwrap().ok().unwrap();
+  let a_x = cap_a.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse a_x");
+  let a_y = cap_a.get(3).unwrap().as_str().parse::<isize>().expect("Could not parse a_y");
+  let b_x = cap_b.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse b_x");
+  let b_y = cap_b.get(3).unwrap().as_str().parse::<isize>().expect("Could not parse b_y");
+  let prize_x = cap_prize.get(1).unwrap().as_str().parse::<isize>().expect("Could not parse prize_x");
+  let prize_y = cap_prize.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse prize_y");
 
-      Machine {
-        button_a: Button {
-          x_const: a_x,
-          y_const: a_y,
-        },
-        button_b: Button {
-          x_const: b_x,
-          y_const: b_y,
-        },
-        prize: Prize {
-          x: prize_x + extra,
-          y: prize_y + extra,
-        }
-      }
+  Machine {
+    button_a: Button {
+      x_const: a_x,
+      y_const: a_y,
     },
-    (_, _, _) => {
-      panic!("Could not parse machine input");
+    button_b: Button {
+      x_const: b_x,
+      y_const: b_y,
+    },
+    prize: Prize {
+      x: prize_x + extra,
+      y: prize_y + extra,
     }
   }
 }
@@ -93,14 +94,6 @@ fn solve_for(machine: &Machine) -> isize {
   let button_b_pushes = button_b_numerator / determinent;
 
   button_a_pushes * 3 + button_b_pushes
-}
-
-fn parse_input(input: &[String], is_part_two: bool) -> Vec<Machine> {
-  let combined = input.iter().join("_");
-
-  combined.split("__").map(|machine_input| {
-    build_machine(machine_input, is_part_two)
-  }).collect::<Vec<Machine>>()
 }
 
 pub struct Day13 {}
