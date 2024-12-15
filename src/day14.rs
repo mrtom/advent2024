@@ -157,14 +157,7 @@ impl AOCDay for Day14 {
     let width = 101;
     let height = 103;
 
-    let mut results = [0; 4];
-
     for i in 1..isize::MAX {
-      results[0] = 0;
-      results[1] = 0;
-      results[2] = 0;
-      results[3] = 0;
-
       let locations = robots
         .iter()
         .map(|robot| {
