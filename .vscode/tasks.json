@@ -1,0 +1,17 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "set-lldb-breakpoint",
+			"type": "shell",
+			"command": "lldb",
+			"args": [
+				"-b",
+				"-o",
+				"breakpoint set --name rust_panic",
+				"-o",
+				"quit"
+			]
+		}
+	]
+}

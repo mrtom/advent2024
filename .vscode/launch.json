@@ -12,7 +12,7 @@
         "args": [
           "build",
           "--bin=advent2024",
-          "--package=advent2024"
+          "--package=advent2024",
         ],
         "filter": {
           "name": "advent2024",
@@ -20,6 +20,11 @@
         }
       },
       "args": [],
+      "env": {
+        "RUST_BACKTRACE": "1"
+      },
+      "stopOnEntry": false,
+      "preLaunchTask": "set-lldb-breakpoint",
       "cwd": "${workspaceFolder}"
     },
     {
