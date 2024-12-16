@@ -5,6 +5,7 @@ mod day12;
 mod day13;
 mod day14;
 mod day15;
+mod day16;
 mod day2;
 mod day3;
 mod day4;
@@ -16,7 +17,6 @@ mod day9;
 mod utils;
 
 use std::path::Path;
-use utils::read_file;
 
 // use day1::Day1;
 // use day2::Day2;
@@ -32,7 +32,8 @@ use utils::read_file;
 // use day12::Day12;
 // use day13::Day13;
 // use day14::Day14;
-use day15::Day15;
+// use day15::Day15;
+use day16::Day16;
 
 pub trait AOCDay {
   fn name(&self) -> String;
@@ -51,8 +52,8 @@ fn run_day(day: &impl AOCDay) {
   let test_data_2_name = &format!("input/{}/test2.txt", day.name());
   let input_2_name = &format!("input/{}/part2.txt", day.name());
 
-  let test_data1 = read_file(test_data_1_name);
-  let input_data1 = read_file(input_1_name);
+  let test_data1 = utils::read_file(test_data_1_name);
+  let input_data1 = utils::read_file(input_1_name);
 
   let test1 = day.solve_part1(&test_data1);
   if test1 == day.test_answer_part1() {
@@ -73,8 +74,8 @@ fn run_day(day: &impl AOCDay) {
       input_1_name
     };
 
-    let test_data2 = read_file(test_data_name);
-    let input_data2 = read_file(input_data_name);
+    let test_data2 = utils::read_file(test_data_name);
+    let input_data2 = utils::read_file(input_data_name);
 
     let test2 = day.solve_part2(&test_data2);
     if test2 == day.test_answer_part2() {
@@ -108,7 +109,8 @@ fn main() {
   // let day12 = Day12 {};
   // let day13 = Day13 {};
   // let day14 = Day14 {};
-  let day15 = Day15 {};
+  // let day15 = Day15 {};
+  let day16 = Day16 {};
 
   // run_day(&day1);
   // run_day(&day2);
@@ -124,7 +126,8 @@ fn main() {
   // run_day(&day12);
   // run_day(&day13);
   // run_day(&day14);
-  run_day(&day15);
+  // run_day(&day15);
+  run_day(&day16);
 
   println!("{:?}", start.elapsed());
 }
