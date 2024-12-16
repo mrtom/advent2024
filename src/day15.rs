@@ -1,3 +1,4 @@
+use std::cmp::{max, min};
 use crate::AOCDay;
 
 // Two inputs. Answers are:
@@ -28,7 +29,6 @@ fn double_map(map: &Map) -> Map {
 
   for (y, row) in map.iter().enumerate() {
     for (x, cell) in row.iter().enumerate() {
-      println!("{} {}", x, y);
       match cell {
         '.' | '#' => {
           new[y][x * 2] = *cell;
@@ -62,6 +62,22 @@ fn find_robot(map: &Map) -> (usize, usize) {
   panic!("Could not find robot");
 }
 
+fn calculate_result(map: &Map) -> usize {
+  map
+    .iter()
+    .enumerate()
+    .flat_map(|(row_idx, row)| {
+      row.iter().enumerate().map(move |(col_idx, cell)| {
+        if *cell == 'O' {
+          100 * row_idx + col_idx
+        } else {
+          0
+        }
+      })
+    })
+    .sum::<usize>()
+}
+
 #[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
 fn make_move(map: &mut Map, instruction: char) {
   let robot_loc = find_robot(map);
@@ -81,13 +97,13 @@ fn make_move(map: &mut Map, instruction: char) {
     "Move out of bounds"
   );
 
-  match map[new_y as usize][new_x as usize] {
+  match map[new_y as usize].get(new_x as usize) {
     // If empty space, just move robot into space
-    '.' => {
+    Some('.') => {
       map[robot_loc.1][robot_loc.0] = '.';
       map[new_y as usize][new_x as usize] = '@';
     }
-    'O' => {
+    Some('O') => {
       // If box, keep looking along the same direction to
       // see if you find a wall or a space next
       let mut cur_loc = (new_x as usize, new_y as usize);
@@ -115,7 +131,139 @@ fn make_move(map: &mut Map, instruction: char) {
         _ => panic!("Invalid move"),
       }
     }
-    '#' => {
+    Some('#') => {
+      // Do nothing
+    }
+    _ => panic!("Invalid move"),
+  }
+}
+
+#[allow(clippy::cast_possible_wrap, clippy::cast_sign_loss)]
+fn make_move2(map: &mut Map, instruction: char) {
+  let robot_loc = find_robot(map);
+  let (x_dir, y_dir): (isize, isize) = match instruction {
+    '^' => (0, -1),
+    'v' => (0, 1),
+    '<' => (-1, 0),
+    '>' => (1, 0),
+    _ => panic!("Invalid instruction"),
+  };
+
+  let new_x = robot_loc.0 as isize + x_dir;
+  let new_y = robot_loc.1 as isize + y_dir;
+
+  assert!(
+    !(new_x < 0 || new_y < 0 || new_y as usize >= map.len() || new_x as usize >= map[0].len()),
+    "Move out of bounds"
+  );
+
+  match map[new_y as usize].get(new_x as usize) {
+    // If empty space, just move robot into space
+    Some('.') => {
+      map[robot_loc.1][robot_loc.0] = '.';
+      map[new_y as usize][new_x as usize] = '@';
+    }
+    Some('[' | ']') => {
+      match instruction {
+        '<' | '>' => {
+          // If box, keep looking along the same direction to
+          // see if you find a wall or a space next
+          let mut cur_loc = (new_x as usize, new_y as usize);
+          while map[cur_loc.1][cur_loc.0] == '[' || map[cur_loc.1][cur_loc.0] == ']' {
+            cur_loc = (
+              (cur_loc.0 as isize + 2* x_dir) as usize,
+              cur_loc.1,
+            );
+            assert!(
+              !(cur_loc.0 >= map[0].len() || cur_loc.1 >= map.len()),
+              "Move out of bounds"
+            );
+          }
+          match map[cur_loc.1].get(cur_loc.0) {
+            Some('#') => {
+              // If wall, do nothing
+            }
+            Some('.') => {
+              // If space, move robot and boxes
+              map[robot_loc.1][robot_loc.0] = '.';
+              map[robot_loc.1][(robot_loc.0 as isize + x_dir) as usize] =
+                '@';
+
+              let first_box_idx = (robot_loc.0 as isize + 2 * x_dir) as usize;
+              for i in min(cur_loc.0, first_box_idx)..=max(cur_loc.0, first_box_idx) {
+                match map[cur_loc.1].get(i) {
+                  Some('[') => {
+                    map[cur_loc.1][i] = ']';
+                  }
+                  Some(']') => {
+                    map[cur_loc.1][i] = '[';
+                  }
+                  Some('@') => {
+                    // Do nothing
+                  }
+                  Some('.') => {
+                    if instruction == '<' {
+                      map[cur_loc.1][i] = '[';
+                    } else {
+                      map[cur_loc.1][i] = ']';
+                    }
+                  }
+                  Some(value) => panic!("Unexpected value: {value}"),
+                  _ => panic!("Invalid move"),
+                }
+              }
+              map[cur_loc.1][cur_loc.0] = '[';
+            }
+            _ => panic!("Invalid move"),
+          }
+        }
+        '^' | 'v' => {
+          // This is the tricky part. If we have boxes above the box above/below us, and those boxes
+          // are offset by one then we need to grow the width of our search space. And if _those_ boxes
+          // have boxes above them offset by one we need to grow again.
+          // i.e:
+          // ##############
+          // ##......##..##
+          // ##..[][][]..##
+          // ##...[][]...##
+          // ##....[]....##
+          // ##.....@....##
+          // ##############
+          //
+          // Need to think about a case like this:
+          // ##############
+          // ##....[]....##
+          // ##..[]..[]..##
+          // ##...[][]...##
+          // ##....[]....##
+          // ##.....@....##
+          // ##############
+          // 
+          // And this:
+          // ##############
+          // ##..........##
+          // ##...[]..[].##
+          // ##..[][][]..##
+          // ##...[][]...##
+          // ##....[]....##
+          // ##.....@....##
+          // ##############
+          let mut boxes: Vec<Vec<(usize, usize)>> = vec![];
+          if map[new_y as usize][robot_loc.0] == '[' {
+            boxes.push(vec!((robot_loc.0, robot_loc.0 + 1); 1));
+          } else {
+            boxes.push(vec!((robot_loc.0 - 1, robot_loc.0); 1));
+          }
+          
+          // Grow the width
+          for box_ in  boxes.last().unwrap() {
+            println!("{}", box_.0);
+          }
+        }
+        _ => panic!("Invalid move"),
+      }
+    }
+    Some('#') => {
       // Do nothing
     }
     _ => panic!("Invalid move"),
@@ -152,26 +300,22 @@ impl AOCDay for Day15 {
       make_move(&mut map, instruction);
     }
 
-    let result = map
-      .iter()
-      .enumerate()
-      .flat_map(|(row_idx, row)| {
-        row.iter().enumerate().map(move |(col_idx, cell)| {
-          if *cell == 'O' {
-            100 * row_idx + col_idx
-          } else {
-            0
-          }
-        })
-      })
-      .sum::<usize>();
+    let result = calculate_result(&map);
     result.to_string()
   }
 
   fn solve_part2(&self, input: &[String]) -> String {
     let (start_map, instructions) = parse_input(input);
     let mut map = double_map(&start_map);
-    "Not implemented".to_string()
+    print_map(&map);
+
+    for instruction in instructions.chars() {
+      make_move2(&mut map, instruction);
+      print_map(&map);
+    }
+
+    let result = calculate_result(&map);
+    result.to_string()
   }
 }
 
