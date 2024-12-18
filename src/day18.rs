@@ -1,13 +1,21 @@
+use core::panic;
+
 use pathfinding::prelude::astar;
 use crate::{utils, AOCDay};
 
 const PART_1_EXAMPLE: &str = "22";
-const PART_2_EXAMPLE: &str = "FAIL";
+const PART_2_EXAMPLE: &str = "6,1";
 
 #[derive(Debug, Copy, Clone, Eq, Hash, PartialEq)]
 struct Point {
   x: i32,
   y: i32,
+}
+
+impl std::fmt::Display for Point {
+  fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    write!(f, "{},{}", self.x, self.y)
+  }
 }
 
 type Map = Vec<Vec<char>>;
@@ -34,18 +42,21 @@ fn is_test(input: &[Point]) -> bool {
   input.len() == 25
 }
 
-fn get_neighbours(map: &Map, location: &Point) -> Vec<(Point, i32)> {
+fn get_neighbours(map: &Map, location: Point) -> Vec<(Point, i32)> {
   let mut neighbours = vec![];
   
   for (dx, dy) in &[(0, -1), (0, 1), (-1, 0), (1, 0)] {
     let new_pos = (location.x + dx, location.y + dy);
-    if new_pos.1 >= 0 && new_pos.1 < utils::usize_to_i32(map.len()).unwrap() && 
-        new_pos.0 >= 0 && new_pos.0 < utils::usize_to_i32( map[0].len()).unwrap() && 
-        map[utils::i32_to_usize(new_pos.1).unwrap()][utils::i32_to_usize(new_pos.0).unwrap()] != '#' 
+    let col_map = utils::usize_to_i32_x(map[0].len());
+    let row_max = utils::usize_to_i32_x(map.len());
+    
+    if new_pos.1 >= 0 && new_pos.1 < row_max && 
+        new_pos.0 >= 0 && new_pos.0 < col_map && 
+        map[utils::i32_to_usize_x(new_pos.1)][utils::i32_to_usize_x(new_pos.0)] != '#' 
     {
       neighbours.push((Point {
-        x: new_pos.0 as i32,
-        y: new_pos.1 as i32,
+        x: new_pos.0,
+        y: new_pos.1,
       }, 1));
     }
   }
@@ -77,20 +88,19 @@ impl AOCDay for Day18 {
 
     let mut map = vec![vec!['.'; grid_dim]; grid_dim];
 
-    for i in 0..num_steps {
-      let next_byte = input[i];
+    for next_byte in input.iter().take(num_steps) {
       let col_idx = utils::i32_to_usize(next_byte.x).unwrap();
       let row_idx = utils::i32_to_usize(next_byte.y).unwrap();
 
       map[row_idx][col_idx] = '#';
-    }
+    };
 
     let start =  Point { x: 0, y: 0 };
-    let end = Point { x: (grid_dim - 1) as i32, y: (grid_dim - 1) as i32 };
+    let end = Point { x: utils::usize_to_i32_x(grid_dim - 1), y: utils::usize_to_i32_x(grid_dim - 1) };
 
     match astar(
       &start,
-      |location| get_neighbours(&map, location),
+      |location| get_neighbours(&map, *location),
       |location| utils::u32_to_i32(end.x.abs_diff(location.x) + end.y.abs_diff(location.y)).unwrap(),
       |location| location == &end,
     ) {
@@ -105,7 +115,40 @@ impl AOCDay for Day18 {
   
   fn solve_part2(&self, input: &[String]) -> String {
     let input = parse_input(input);
-    "Not implemented".to_string()
+    let is_test_run = is_test(&input);
+
+    let grid_dim = if is_test_run { 7 } else { 71 };
+    let num_steps = if is_test_run { 12 } else { 1024 };
+
+    let mut map = vec![vec!['.'; grid_dim]; grid_dim];
+
+    for next_byte in input.iter().take(num_steps) {
+      let col_idx = utils::i32_to_usize(next_byte.x).unwrap();
+      let row_idx = utils::i32_to_usize(next_byte.y).unwrap();
+
+      map[row_idx][col_idx] = '#';
+    };
+
+    let start =  Point { x: 0, y: 0 };
+    let end = Point { x: utils::usize_to_i32_x(grid_dim - 1), y: utils::usize_to_i32_x(grid_dim - 1) };
+
+    for (step, next_byte) in input.iter().enumerate().take(input.len()).skip(num_steps) {
+      let col_idx = utils::i32_to_usize(next_byte.x).unwrap();
+      let row_idx = utils::i32_to_usize(next_byte.y).unwrap();
+      map[row_idx][col_idx] = '#';
+
+      if let Some((_, _)) = astar(
+        &start,
+        |location| get_neighbours(&map, *location),
+        |location| utils::u32_to_i32(end.x.abs_diff(location.x) + end.y.abs_diff(location.y)).unwrap(),
+        |location| location == &end,
+      ) {
+        {}
+      } else {
+        return input[step].to_string();
+      }
+    };
+    panic!("No blocked path found.");
   }
 }
 
@@ -145,7 +188,7 @@ mod tests {
   fn test_part_2() {
     let day = Day18 {};
     assert_eq!(
-      "TODO",
+      "22,33",
       day.solve_part2(&read_file("input/day18/part1.txt"))
     );
   }
