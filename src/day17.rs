@@ -8,10 +8,10 @@ const PART_2_EXAMPLE: &str = "117440";
 
 #[derive(Clone)]
 struct Computer {
-  reg_a: i32,
-  reg_b: i32,
-  reg_c: i32,
-  instruction_ptr: i32,
+  reg_a: i64,
+  reg_b: i64,
+  reg_c: i64,
+  instruction_ptr: i64,
 }
 
 fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
@@ -27,9 +27,9 @@ fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
   };
 
 
-  let reg_a = caps_a.get(1).unwrap().as_str().parse::<i32>().unwrap();
-  let reg_b = caps_b.get(1).unwrap().as_str().parse::<i32>().unwrap();
-  let reg_c = caps_c.get(1).unwrap().as_str().parse::<i32>().unwrap();
+  let reg_a = caps_a.get(1).unwrap().as_str().parse::<i64>().unwrap();
+  let reg_b = caps_b.get(1).unwrap().as_str().parse::<i64>().unwrap();
+  let reg_c = caps_c.get(1).unwrap().as_str().parse::<i64>().unwrap();
 
   let program_regex = Regex::new(r"Program: ([0-9,]+)").unwrap();
   let Some(caps_program) = program_regex.captures(&input[4]) else {
@@ -40,7 +40,7 @@ fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
   (Computer { reg_a, reg_b, reg_c, instruction_ptr: 0 }, program)
 }
 
-fn combo_operand(operand: u8, computer: &Computer) -> i32 {
+fn combo_operand(operand: u8, computer: &Computer) -> i64 {
   match operand {
     0 => 0,
     1 => 1,
@@ -57,11 +57,11 @@ fn combo_operand(operand: u8, computer: &Computer) -> i32 {
 fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<String> {
   match opcode {
     0 => {
-      computer.reg_a = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_a = computer.reg_a / (2 as i64).pow(combo_operand(operand, computer) as u32) as i64;
       computer.instruction_ptr += 2;
     }
     1 => {
-      computer.reg_b = computer.reg_b ^ operand as i32;
+      computer.reg_b = computer.reg_b ^ operand as i64;
       computer.instruction_ptr += 2;
     }
     2 => {
@@ -74,7 +74,7 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
           computer.instruction_ptr += 2;
         }
         _ => { 
-          computer.instruction_ptr = operand as i32; 
+          computer.instruction_ptr = operand as i64; 
         }
       }
     }
@@ -88,11 +88,11 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
       return Some(format!("{output}"));
     }
     6 => {
-      computer.reg_b = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_b = computer.reg_a / (2 as i64).pow(combo_operand(operand, computer) as u32) as i64;
       computer.instruction_ptr += 2;
     }
     7 => {
-      computer.reg_c = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_c = computer.reg_a / (2 as i64).pow(combo_operand(operand, computer) as u32) as i64;
       computer.instruction_ptr += 2;
     }
     
@@ -105,7 +105,7 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
 fn run_program(program: &Vec<u8>, computer: &mut Computer) -> Vec<String> {
   let mut output = Vec::new();
 
-  while computer.instruction_ptr < program.len() as i32 {
+  while computer.instruction_ptr < program.len() as i64 {
     let opcode = program[computer.instruction_ptr as usize];
     let operand = program[(computer.instruction_ptr + 1) as usize];
     match perform_opcode(opcode, operand, computer) {
@@ -144,7 +144,7 @@ impl AOCDay for Day17 {
     let (computer, program) = parse_input(input);
 
     let program_as_str = program.iter().map(ToString::to_string).collect::<Vec<String>>();
-    for a in 0..=i32::MAX {
+    for a in 0..=i64::MAX {
       let mut next_computer = computer.clone();
       next_computer.reg_a = a;
       let output = run_program(&program, &mut next_computer);
