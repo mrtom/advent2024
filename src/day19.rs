@@ -1,4 +1,5 @@
-use std::{collections::HashSet, string::String};
+use memoize::memoize;
+use std::string::String;
 use crate::AOCDay;
 
 const PART_1_EXAMPLE: &str = "6";
@@ -29,6 +30,21 @@ fn is_possible(towels: &[&str], design: &str) -> bool {
   matches[design_length]
 }
 
+#[memoize]
+#[allow(clippy::needless_pass_by_value)]
+fn valid_paths(towels: Vec<String>, design: String) -> usize {
+  if design.is_empty() { return 1 }
+
+  let mut count = 0;
+  for towel in &towels {
+    if let Some(prefix) = design.strip_prefix(towel) {
+      count += valid_paths(towels.clone(), prefix.into());
+    }
+  }
+
+  count
+}
+
 pub struct Day19 {}
 
 impl AOCDay for Day19 {
@@ -52,8 +68,11 @@ impl AOCDay for Day19 {
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
-    let input = parse_input(input);
-    "Not implemented".to_string()
+    let (towels, designs) = parse_input(input);
+    let towels = towels.iter().map(ToString::to_string).collect::<Vec<String>>();
+
+    let result = designs.iter().map(|design| valid_paths(towels.clone(), design.clone())).sum::<usize>();
+    result.to_string()
   }
 }
 
@@ -93,7 +112,7 @@ mod tests {
   fn test_part_2() {
     let day = Day19 {};
     assert_eq!(
-      "TODO",
+      "712058625427487",
       day.solve_part2(&read_file("input/day19/part1.txt"))
     );
   }
