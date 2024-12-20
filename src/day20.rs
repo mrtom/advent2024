@@ -127,11 +127,10 @@ impl AOCDay for Day20 {
       |loc| *loc == end,
     ).expect("Could not find valid path through maze").1;
 
-    let cheat_pairs = get_wall_pairs(&map);
-    for cheat_pair in cheat_pairs {
+    let cheat_starts = get_wall_pairs(&map).iter().map(|pair| pair.0).collect::<HashSet<Point>>();
+    for cheat in cheat_starts {
       let mut new_map = map.clone();
-      let first = cheat_pair.0;
-      new_map[utils::i32_to_usize_x(first.y)][utils::i32_to_usize_x(first.x)] = '.';
+      new_map[utils::i32_to_usize_x(cheat.y)][utils::i32_to_usize_x(cheat.x)] = '.';
 
       if let Some((_, new_cost)) = astar(
         &start,
@@ -145,7 +144,7 @@ impl AOCDay for Day20 {
       }
     }
 
-    (big_cheat_count / 2).to_string()
+    big_cheat_count.to_string()
   }
   
   fn solve_part2(&self, input: &[String]) -> String {
