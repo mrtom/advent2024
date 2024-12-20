@@ -13,6 +13,10 @@ pub fn i32_to_usize_x(value: i32) -> usize {
   value.try_into().expect("Failed to convert i32 to usize")
 }
 
+pub fn i32_to_u32_x(value: i32) -> u32 {
+  value.try_into().expect("Failed to convert i32 to u32")
+}
+
 pub fn usize_to_i32(value: usize) -> Option<i32> {
   value.try_into().ok()
 }

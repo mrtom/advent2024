@@ -1,7 +1,7 @@
 use regex::Regex;
 use std::string::ToString;
 
-use crate::AOCDay;
+use crate::{AOCDay, utils};
 
 const PART_1_EXAMPLE: &str = "4,6,3,5,6,3,5,2,1,0";
 const PART_2_EXAMPLE: &str = "117440";
@@ -35,7 +35,7 @@ fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
   let Some(caps_program) = program_regex.captures(&input[4]) else {
     panic!("Failed to parse program line");
   };
-  let program = caps_program.get(1).unwrap().as_str().split(",").map(|x| x.parse::<u8>().unwrap()).collect();
+  let program = caps_program.get(1).unwrap().as_str().split(',').map(|x| x.parse::<u8>().unwrap()).collect();
 
   (Computer { reg_a, reg_b, reg_c, instruction_ptr: 0 }, program)
 }
@@ -57,11 +57,11 @@ fn combo_operand(operand: u8, computer: &Computer) -> i32 {
 fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<String> {
   match opcode {
     0 => {
-      computer.reg_a = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_a /= 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
     1 => {
-      computer.reg_b = computer.reg_b ^ operand as i32;
+      computer.reg_b ^= i32::from(operand);
       computer.instruction_ptr += 2;
     }
     2 => {
@@ -74,12 +74,12 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
           computer.instruction_ptr += 2;
         }
         _ => { 
-          computer.instruction_ptr = operand as i32; 
+          computer.instruction_ptr = i32::from(operand); 
         }
       }
     }
     4 => {
-      computer.reg_b = computer.reg_b ^ computer.reg_c;
+      computer.reg_b ^= computer.reg_c;
       computer.instruction_ptr += 2;
     }
     5 => {
@@ -88,11 +88,11 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
       return Some(format!("{output}"));
     }
     6 => {
-      computer.reg_b = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_b = computer.reg_a / 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
     7 => {
-      computer.reg_c = computer.reg_a / (2 as i32).pow(combo_operand(operand, computer) as u32) as i32;
+      computer.reg_c = computer.reg_a / 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
     
@@ -102,15 +102,14 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
   None
 }
 
-fn run_program(program: &Vec<u8>, computer: &mut Computer) -> Vec<String> {
+fn run_program(program: &[u8], computer: &mut Computer) -> Vec<String> {
   let mut output = Vec::new();
 
-  while computer.instruction_ptr < program.len() as i32 {
-    let opcode = program[computer.instruction_ptr as usize];
-    let operand = program[(computer.instruction_ptr + 1) as usize];
-    match perform_opcode(opcode, operand, computer) {
-      Some(o) => output.push(o),
-      None => {}
+  while computer.instruction_ptr < utils::usize_to_i32_x(program.len()) {
+    let opcode = program[utils::i32_to_usize_x(computer.instruction_ptr)];
+    let operand = program[utils::i32_to_usize_x(computer.instruction_ptr) + 1];
+    if let Some(oput) = perform_opcode(opcode, operand, computer) {
+      output.push(oput);
     }
   }
 
