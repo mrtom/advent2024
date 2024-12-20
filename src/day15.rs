@@ -1,4 +1,4 @@
-use crate::AOCDay;
+use crate::{AOCDay, utils};
 
 // Two inputs. Answers are:
 // 10092 and
@@ -23,12 +23,13 @@ fn parse_input(input: &[String]) -> (Map, String) {
   (map, instructions.join(""))
 }
 
+#[allow(dead_code)]
 fn double_map(map: &Map) -> Map {
   let mut new = vec![vec!['.'; map[0].len() * 2]; map.len()];
 
   for (y, row) in map.iter().enumerate() {
     for (x, cell) in row.iter().enumerate() {
-      println!("{} {}", x, y);
+      println!("{x} {y}");
       match cell {
         '.' | '#' => {
           new[y][x * 2] = *cell;
@@ -81,13 +82,13 @@ fn make_move(map: &mut Map, instruction: char) {
     "Move out of bounds"
   );
 
-  match map[new_y as usize][new_x as usize] {
+  match map[utils::isize_to_usize_x(new_y)].get(utils::isize_to_usize_x(new_x)) {
     // If empty space, just move robot into space
-    '.' => {
+    Some('.') => {
       map[robot_loc.1][robot_loc.0] = '.';
       map[new_y as usize][new_x as usize] = '@';
     }
-    'O' => {
+    Some('O') => {
       // If box, keep looking along the same direction to
       // see if you find a wall or a space next
       let mut cur_loc = (new_x as usize, new_y as usize);
@@ -115,7 +116,7 @@ fn make_move(map: &mut Map, instruction: char) {
         _ => panic!("Invalid move"),
       }
     }
-    '#' => {
+    Some('#') => {
       // Do nothing
     }
     _ => panic!("Invalid move"),
@@ -168,9 +169,9 @@ impl AOCDay for Day15 {
     result.to_string()
   }
 
-  fn solve_part2(&self, input: &[String]) -> String {
-    let (start_map, instructions) = parse_input(input);
-    let mut map = double_map(&start_map);
+  fn solve_part2(&self, _input: &[String]) -> String {
+    // let (start_map, instructions) = parse_input(input);
+    // let mut map = double_map(&start_map);
     "Not implemented".to_string()
   }
 }
