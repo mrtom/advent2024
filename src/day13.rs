@@ -140,20 +140,13 @@ impl AOCDay for Day13 {
 
   fn solve_part1(&self, input: &[String]) -> String {
     let machines = parse_input(input, false);
-    machines
-      .iter()
-      .map(|machine| solve_for(machine))
-      .sum::<isize>()
-      .to_string()
+    machines.iter().map(solve_for).sum::<isize>().to_string()
   }
 
   fn solve_part2(&self, input: &[String]) -> String {
     let machines = parse_input(input, true);
 
-    let answer = machines
-      .iter()
-      .map(|machine| solve_for(machine))
-      .sum::<isize>();
+    let answer = machines.iter().map(solve_for).sum::<isize>();
 
     answer.to_string()
   }
