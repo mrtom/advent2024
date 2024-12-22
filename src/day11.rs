@@ -57,15 +57,15 @@ impl AOCDay for Day11 {
   fn name(&self) -> String {
     "day11".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     PART_1_EXAMPLE.to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     PART_2_EXAMPLE.to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let mut input = parse_input(&input[0]);
     for _ in 0..25 {
@@ -73,7 +73,7 @@ impl AOCDay for Day11 {
     }
     input.len().to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let input = parse_input(&input[0]);
     let mut map: HashMap<usize, usize> = input.iter().map(|value| (*value, 1)).collect();
@@ -91,7 +91,7 @@ impl AOCDay for Day11 {
 mod tests {
   use super::*;
   use crate::utils::read_file;
-  
+
   #[test]
   fn test_part_1_example() {
     let day = Day11 {};
@@ -100,7 +100,7 @@ mod tests {
       day.solve_part1(&read_file("input/day11/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_1() {
     let day = Day11 {};
@@ -118,7 +118,7 @@ mod tests {
       day.solve_part2(&read_file("input/day11/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_2() {
     let day = Day11 {};

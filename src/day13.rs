@@ -25,9 +25,10 @@ struct Machine {
 fn parse_input(input: &[String], is_part_two: bool) -> Vec<Machine> {
   let combined = input.iter().join("_");
 
-  combined.split("__").map(|machine_input| {
-    build_machine(machine_input, is_part_two)
-  }).collect::<Vec<Machine>>()
+  combined
+    .split("__")
+    .map(|machine_input| build_machine(machine_input, is_part_two))
+    .collect::<Vec<Machine>>()
 }
 
 fn build_machine(input: &str, is_part_two: bool) -> Machine {
@@ -36,11 +37,7 @@ fn build_machine(input: &str, is_part_two: bool) -> Machine {
   let extra: isize = if is_part_two { 10_000_000_000_000 } else { 0 };
 
   let machine_input = input.split('_').collect::<Vec<&str>>();
-  let (
-    a_input, 
-    b_input, 
-    prize_input
-  ) = (machine_input[0], machine_input[1], machine_input[2]);
+  let (a_input, b_input, prize_input) = (machine_input[0], machine_input[1], machine_input[2]);
 
   let capture_a = button_regex.captures(a_input);
   let capture_b = button_regex.captures(b_input);
@@ -50,12 +47,42 @@ fn build_machine(input: &str, is_part_two: bool) -> Machine {
   let cap_b = capture_b.expect("Could not parse capture_b");
   let cap_prize = capture_prize.expect("Could not parse capture_prize");
 
-  let a_x = cap_a.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse a_x");
-  let a_y = cap_a.get(3).unwrap().as_str().parse::<isize>().expect("Could not parse a_y");
-  let b_x = cap_b.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse b_x");
-  let b_y = cap_b.get(3).unwrap().as_str().parse::<isize>().expect("Could not parse b_y");
-  let prize_x = cap_prize.get(1).unwrap().as_str().parse::<isize>().expect("Could not parse prize_x");
-  let prize_y = cap_prize.get(2).unwrap().as_str().parse::<isize>().expect("Could not parse prize_y");
+  let a_x = cap_a
+    .get(2)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse a_x");
+  let a_y = cap_a
+    .get(3)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse a_y");
+  let b_x = cap_b
+    .get(2)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse b_x");
+  let b_y = cap_b
+    .get(3)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse b_y");
+  let prize_x = cap_prize
+    .get(1)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse prize_x");
+  let prize_y = cap_prize
+    .get(2)
+    .unwrap()
+    .as_str()
+    .parse::<isize>()
+    .expect("Could not parse prize_y");
 
   Machine {
     button_a: Button {
@@ -69,7 +96,7 @@ fn build_machine(input: &str, is_part_two: bool) -> Machine {
     prize: Prize {
       x: prize_x + extra,
       y: prize_y + extra,
-    }
+    },
   }
 }
 
@@ -81,13 +108,13 @@ fn solve_for(machine: &Machine) -> isize {
   let determinent = button_a.x_const * button_b.y_const - button_a.y_const * button_b.x_const;
 
   if determinent == 0 {
-    return 0
+    return 0;
   }
 
   let button_a_numerator = prize.x * button_b.y_const - prize.y * button_b.x_const;
   let button_b_numerator = button_a.x_const * prize.y - button_a.y_const * prize.x;
-  if button_a_numerator % determinent != 0 ||  button_b_numerator % determinent != 0 {
-    return 0
+  if button_a_numerator % determinent != 0 || button_b_numerator % determinent != 0 {
+    return 0;
   }
 
   let button_a_pushes = button_a_numerator / determinent;
@@ -102,28 +129,31 @@ impl AOCDay for Day13 {
   fn name(&self) -> String {
     "day13".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     PART_1_EXAMPLE.to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     PART_2_EXAMPLE.to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let machines = parse_input(input, false);
-    machines.iter().map(|machine| {
-      solve_for(machine)
-    }).sum::<isize>().to_string()
+    machines
+      .iter()
+      .map(|machine| solve_for(machine))
+      .sum::<isize>()
+      .to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let machines = parse_input(input, true);
 
-    let answer = machines.iter().map(|machine| {
-      solve_for(machine)
-    }).sum::<isize>();
+    let answer = machines
+      .iter()
+      .map(|machine| solve_for(machine))
+      .sum::<isize>();
 
     answer.to_string()
   }
@@ -142,7 +172,7 @@ mod tests {
       day.solve_part1(&read_file("input/day13/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_1() {
     let day = Day13 {};
@@ -160,7 +190,7 @@ mod tests {
       day.solve_part2(&read_file("input/day13/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_2() {
     let day = Day13 {};

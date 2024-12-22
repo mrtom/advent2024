@@ -25,32 +25,35 @@ fn parse_input(input: &[String]) -> Vec<Vec<Cell>> {
   input
     .iter()
     .enumerate()
-    .map(|(row_idx, line)| line.chars()
-      .enumerate()
-      .map(|(col_idx, char)| Cell {
-        crop: char,
-        island_id: None,
-        row: row_idx,
-        col: col_idx,
-      })
-    .collect())
-  .collect()
+    .map(|(row_idx, line)| {
+      line
+        .chars()
+        .enumerate()
+        .map(|(col_idx, char)| Cell {
+          crop: char,
+          island_id: None,
+          row: row_idx,
+          col: col_idx,
+        })
+        .collect()
+    })
+    .collect()
 }
 
 fn find_valid_neighbours(map: &Map, row: usize, col: usize) -> Vec<(usize, usize)> {
   let mut neighbors = Vec::new();
 
   if row > 0 {
-      neighbors.push((row - 1, col)); // Up
+    neighbors.push((row - 1, col)); // Up
   }
   if row < map.len() - 1 {
-      neighbors.push((row + 1, col)); // Down
+    neighbors.push((row + 1, col)); // Down
   }
   if col > 0 {
-      neighbors.push((row, col - 1)); // Left
+    neighbors.push((row, col - 1)); // Left
   }
   if col < map[0].len() - 1 {
-      neighbors.push((row, col + 1)); // Right
+    neighbors.push((row, col + 1)); // Right
   }
 
   neighbors
@@ -118,7 +121,8 @@ fn calculate_perimeter_length(map: &Map, row: usize, col: usize) -> usize {
 }
 
 fn calculate_island_perimeter(map: &Map, island_id: usize) -> usize {
-  map.iter()
+  map
+    .iter()
     .flat_map(|row| row.iter())
     .filter(|cell| cell.island_id == Some(island_id))
     .map(|cell| calculate_perimeter_length(map, cell.row, cell.col))
@@ -132,45 +136,51 @@ fn calculate_number_of_sides(map: &Map, row: usize, col: usize) -> usize {
   // We reduce the top edge by one if the cell to the left is the same crop AND
   // the cell above is not the same crop AND
   // the cell above and to the left is not the same crop (or is out of bounds)
-  if (col > 0 && map[row][col - 1].crop == current_crop) &&
-    (row == 0 || map[row - 1][col].crop != current_crop) &&
-    (row > 0 && col > 0 && map[row - 1][col - 1].crop != current_crop || row == 0 && col > 0) {
+  if (col > 0 && map[row][col - 1].crop == current_crop)
+    && (row == 0 || map[row - 1][col].crop != current_crop)
+    && (row > 0 && col > 0 && map[row - 1][col - 1].crop != current_crop || row == 0 && col > 0)
+  {
     num_sides -= 1;
   }
 
   // We reduce the bottom edge by one if the cell to the left is the same crop AND
   // the cell below is not the same crop AND
   // the cell below and to the left is not the same crop (or is out of bounds)
-  if (col > 0 && map[row][col - 1].crop == current_crop) &&
-    (row == map.len() - 1 || map[row + 1][col].crop != current_crop) &&
-    (row < map.len() - 1 && col > 0 && map[row + 1][col - 1].crop != current_crop || row == map.len() - 1 && col > 0) {
+  if (col > 0 && map[row][col - 1].crop == current_crop)
+    && (row == map.len() - 1 || map[row + 1][col].crop != current_crop)
+    && (row < map.len() - 1 && col > 0 && map[row + 1][col - 1].crop != current_crop
+      || row == map.len() - 1 && col > 0)
+  {
     num_sides -= 1;
   }
 
   // We reduce the left edge by one if the cell above is the same crop AND
   // the cell to the left is not the same crop AND
   // the cell above and to the left is not the same crop (or is out of bounds)
-  if (row > 0 && map[row - 1][col].crop == current_crop) &&
-    (col == 0 || map[row][col - 1].crop != current_crop) &&
-    (row > 0 && col > 0 && map[row - 1][col - 1].crop != current_crop || row > 0 && col == 0) {
+  if (row > 0 && map[row - 1][col].crop == current_crop)
+    && (col == 0 || map[row][col - 1].crop != current_crop)
+    && (row > 0 && col > 0 && map[row - 1][col - 1].crop != current_crop || row > 0 && col == 0)
+  {
     num_sides -= 1;
   }
 
   // We reduce the right edge by one if the cell above is the same crop AND
   // the cell to the right is not the same crop AND
   // the cell above and to the right is not the same crop (or is out of bounds)
-  if (row > 0 && map[row - 1][col].crop == current_crop) &&
-    (col == map[0].len() - 1 || map[row][col + 1].crop != current_crop) &&
-    (row > 0 && col < map[0].len() - 1 && map[row - 1][col + 1].crop != current_crop || row > 0 && col == map[0].len() - 1) {
+  if (row > 0 && map[row - 1][col].crop == current_crop)
+    && (col == map[0].len() - 1 || map[row][col + 1].crop != current_crop)
+    && (row > 0 && col < map[0].len() - 1 && map[row - 1][col + 1].crop != current_crop
+      || row > 0 && col == map[0].len() - 1)
+  {
     num_sides -= 1;
   }
-
 
   num_sides
 }
 
 fn calculate_island_num_of_sides(map: &Map, island_id: usize) -> usize {
-  let num_sides = map.iter()
+  let num_sides = map
+    .iter()
     .flat_map(|row| row.iter())
     .filter(|cell| cell.island_id == Some(island_id))
     .map(|cell| calculate_number_of_sides(map, cell.row, cell.col))
@@ -180,7 +190,8 @@ fn calculate_island_num_of_sides(map: &Map, island_id: usize) -> usize {
 }
 
 fn calculate_island_area(map: &Map, island_id: usize) -> usize {
-  map.iter()
+  map
+    .iter()
     .flat_map(|row| row.iter())
     .filter(|cell| cell.island_id == Some(island_id))
     .count()
@@ -192,38 +203,32 @@ impl AOCDay for Day12 {
   fn name(&self) -> String {
     "day12".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     PART_1_EXAMPLE.to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     PART_2_EXAMPLE.to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let mut map = parse_input(input);
     let max_id = find_islands(&mut map);
 
     let cost = (1..=max_id)
-      .map(|id| {
-          calculate_island_perimeter(&map, id) *
-          calculate_island_area(&map, id)
-      })      
+      .map(|id| calculate_island_perimeter(&map, id) * calculate_island_area(&map, id))
       .sum::<usize>();
 
     cost.to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let mut map = parse_input(input);
     let max_id = find_islands(&mut map);
 
     let cost = (1..=max_id)
-      .map(|id| {
-        calculate_island_num_of_sides(&map, id) * 
-        calculate_island_area(&map, id)
-      })      
+      .map(|id| calculate_island_num_of_sides(&map, id) * calculate_island_area(&map, id))
       .sum::<usize>();
 
     cost.to_string()
@@ -243,7 +248,7 @@ mod tests {
       day.solve_part1(&read_file("input/day12/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_1() {
     let day = Day12 {};
@@ -261,7 +266,7 @@ mod tests {
       day.solve_part2(&read_file("input/day12/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_2() {
     let day = Day12 {};

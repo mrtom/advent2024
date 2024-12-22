@@ -20,23 +20,28 @@ struct Block {
 
 fn parse_input(input: &[String]) -> Vec<Block> {
   let line = &input[0];
-  line.chars().map(|char| char.to_string().parse::<usize>().unwrap()).enumerate().map(|(idx, value)| {
-    if idx % 2 == 0 {
-      Block {
-        id: idx / 2,
-        length: value,
-        r#type:  BlockType::File,      
-        compacted: false,
+  line
+    .chars()
+    .map(|char| char.to_string().parse::<usize>().unwrap())
+    .enumerate()
+    .map(|(idx, value)| {
+      if idx % 2 == 0 {
+        Block {
+          id: idx / 2,
+          length: value,
+          r#type: BlockType::File,
+          compacted: false,
+        }
+      } else {
+        Block {
+          id: 0,
+          length: value,
+          r#type: BlockType::FreeSpace,
+          compacted: false,
+        }
       }
-    } else {
-      Block {
-        id: 0,
-        length: value,
-        r#type: BlockType::FreeSpace,
-        compacted: false,
-      }
-    }
-  }).collect()
+    })
+    .collect()
 }
 
 fn expand(input: &[Block]) -> Vec<usize> {
@@ -52,12 +57,14 @@ fn expand(input: &[Block]) -> Vec<usize> {
 }
 
 fn calculate_answer(input: &[usize]) -> usize {
-  input.iter().enumerate().map(|(idx, value)| {
-    match value {
-     &v if v == MARKER => 0,
-      _ => idx * value
-    }
-  }).sum()
+  input
+    .iter()
+    .enumerate()
+    .map(|(idx, value)| match value {
+      &v if v == MARKER => 0,
+      _ => idx * value,
+    })
+    .sum()
 }
 
 pub struct Day9 {}
@@ -66,15 +73,15 @@ impl AOCDay for Day9 {
   fn name(&self) -> String {
     "day9".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     PART_1_EXAMPLE.to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     PART_2_EXAMPLE.to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let input = parse_input(input);
     let mut expanded = expand(&input);
@@ -96,18 +103,24 @@ impl AOCDay for Day9 {
 
     calculate_answer(&expanded).to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let mut input = parse_input(input);
 
     loop {
-      match input.iter().rposition(|block| block.r#type == BlockType::File && !block.compacted) {
+      match input
+        .iter()
+        .rposition(|block| block.r#type == BlockType::File && !block.compacted)
+      {
         None => break,
         Some(last_file_block_idx) => {
           input[last_file_block_idx].compacted = true;
 
-          match input.iter().position(|block| block.r#type == BlockType::FreeSpace && block.length >=  input[last_file_block_idx].length) {
-            None => {},
+          match input.iter().position(|block| {
+            block.r#type == BlockType::FreeSpace
+              && block.length >= input[last_file_block_idx].length
+          }) {
+            None => {}
             Some(first_free_block_idx) => {
               if first_free_block_idx < last_file_block_idx {
                 input.swap(first_free_block_idx, last_file_block_idx);
@@ -141,7 +154,7 @@ impl AOCDay for Day9 {
 mod tests {
   use super::*;
   use crate::utils::read_file;
-  
+
   #[test]
   fn test_part_1_example() {
     let day = Day9 {};
@@ -150,7 +163,7 @@ mod tests {
       day.solve_part1(&read_file("input/day9/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_1() {
     let day = Day9 {};
@@ -168,7 +181,7 @@ mod tests {
       day.solve_part2(&read_file("input/day9/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_2() {
     let day = Day9 {};

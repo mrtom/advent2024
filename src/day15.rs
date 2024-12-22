@@ -1,4 +1,4 @@
-use crate::{AOCDay, utils};
+use crate::{utils, AOCDay};
 
 // Two inputs. Answers are:
 // 10092 and

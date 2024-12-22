@@ -9,37 +9,47 @@ type Map = Vec<Vec<u32>>;
 type Position = (usize, usize);
 
 fn parse_input(input: &[String]) -> Vec<Vec<u32>> {
-  input.iter().map(
-    | str | str.chars().map(|char| char.to_digit(10).unwrap_or(u32::MAX)).collect::<Vec<u32>>()
-  ).collect::<Vec<Vec<u32>>>()
+  input
+    .iter()
+    .map(|str| {
+      str
+        .chars()
+        .map(|char| char.to_digit(10).unwrap_or(u32::MAX))
+        .collect::<Vec<u32>>()
+    })
+    .collect::<Vec<Vec<u32>>>()
 }
 
-fn find_valid_neighbours(map: &Map, current_position: Position, previous_position: Position) -> Vec<Position> {
+fn find_valid_neighbours(
+  map: &Map,
+  current_position: Position,
+  previous_position: Position,
+) -> Vec<Position> {
   let (row, col) = current_position;
   let (prev_row, prev_col) = previous_position;
   let mut neighbors = Vec::new();
 
   if row > 0 && row - 1 != prev_row {
-      neighbors.push((row - 1, col)); // Up
+    neighbors.push((row - 1, col)); // Up
   }
   if row < map.len() - 1 && row + 1 != prev_row {
-      neighbors.push((row + 1, col)); // Down
+    neighbors.push((row + 1, col)); // Down
   }
   if col > 0 && col - 1 != prev_col {
-      neighbors.push((row, col - 1)); // Left
+    neighbors.push((row, col - 1)); // Left
   }
   if col < map[0].len() - 1 && col + 1 != prev_col {
-      neighbors.push((row, col + 1)); // Right
+    neighbors.push((row, col + 1)); // Right
   }
 
   neighbors
 }
 
 fn walk(
-  map: &Map, 
-  peaks: &mut HashSet<Position>, 
+  map: &Map,
+  peaks: &mut HashSet<Position>,
   trails: &mut HashSet<String>,
-  current_position: Position, 
+  current_position: Position,
   previous_position: Position,
   route: &str,
 ) {
@@ -63,7 +73,14 @@ fn walk(
 fn score_trail(map: &Map, trailhead: Position) -> (usize, usize) {
   let mut peaks: HashSet<Position> = HashSet::new();
   let mut trails: HashSet<String> = HashSet::new();
-  walk(map, &mut peaks, &mut trails, trailhead, (usize::MAX, usize::MAX), "");
+  walk(
+    map,
+    &mut peaks,
+    &mut trails,
+    trailhead,
+    (usize::MAX, usize::MAX),
+    "",
+  );
 
   (peaks.len(), trails.len())
 }
@@ -74,35 +91,49 @@ impl AOCDay for Day10 {
   fn name(&self) -> String {
     "day10".to_string()
   }
-  
+
   fn test_answer_part1(&self) -> String {
     PART_1_EXAMPLE.to_string()
   }
-  
+
   fn test_answer_part2(&self) -> String {
     PART_2_EXAMPLE.to_string()
   }
-  
+
   fn solve_part1(&self, input: &[String]) -> String {
     let input = parse_input(input);
 
-    let result = input.iter().enumerate().flat_map(|(row, _)| {
-      input[row].iter().enumerate().filter(| (_, value) | **value == 0).map(|(col, _)| {
-        score_trail(&input, (row, col)).0
-      }).collect::<Vec<usize>>()
-    }).sum::<usize>();
+    let result = input
+      .iter()
+      .enumerate()
+      .flat_map(|(row, _)| {
+        input[row]
+          .iter()
+          .enumerate()
+          .filter(|(_, value)| **value == 0)
+          .map(|(col, _)| score_trail(&input, (row, col)).0)
+          .collect::<Vec<usize>>()
+      })
+      .sum::<usize>();
 
     result.to_string()
   }
-  
+
   fn solve_part2(&self, input: &[String]) -> String {
     let input = parse_input(input);
 
-    let result = input.iter().enumerate().flat_map(|(row, _)| {
-      input[row].iter().enumerate().filter(| (_, value) | **value == 0).map(|(col, _)| {
-        score_trail(&input, (row, col)).1
-      }).collect::<Vec<usize>>()
-    }).sum::<usize>();
+    let result = input
+      .iter()
+      .enumerate()
+      .flat_map(|(row, _)| {
+        input[row]
+          .iter()
+          .enumerate()
+          .filter(|(_, value)| **value == 0)
+          .map(|(col, _)| score_trail(&input, (row, col)).1)
+          .collect::<Vec<usize>>()
+      })
+      .sum::<usize>();
 
     result.to_string()
   }
@@ -112,7 +143,7 @@ impl AOCDay for Day10 {
 mod tests {
   use super::*;
   use crate::utils::read_file;
-   
+
   #[test]
   fn test_part_1_example() {
     let day = Day10 {};
@@ -125,10 +156,7 @@ mod tests {
   #[test]
   fn test_part_1() {
     let day = Day10 {};
-    assert_eq!(
-      "557",
-      day.solve_part1(&read_file("input/day10/part1.txt"))
-    );
+    assert_eq!("557", day.solve_part1(&read_file("input/day10/part1.txt")));
   }
 
   #[test]
@@ -144,10 +172,7 @@ mod tests {
       "..9....".to_string(),
     ];
 
-    assert_eq!(
-      "3",
-      day.solve_part2(&input)
-    );
+    assert_eq!("3", day.solve_part2(&input));
   }
 
   #[test]
@@ -163,10 +188,7 @@ mod tests {
       "987....".to_string(),
     ];
 
-    assert_eq!(
-      "13",
-      day.solve_part2(&input)
-    );
+    assert_eq!("13", day.solve_part2(&input));
   }
 
   #[test]
@@ -177,13 +199,10 @@ mod tests {
       day.solve_part2(&read_file("input/day10/test1.txt"))
     );
   }
-  
+
   #[test]
   fn test_part_2() {
     let day = Day10 {};
-    assert_eq!(
-      "1062",
-      day.solve_part2(&read_file("input/day10/part1.txt"))
-    );
+    assert_eq!("1062", day.solve_part2(&read_file("input/day10/part1.txt")));
   }
 }
