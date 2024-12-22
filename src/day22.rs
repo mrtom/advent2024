@@ -1,4 +1,4 @@
-use std::collections::{HashMap, VecDeque};
+use std::collections::{HashMap, HashSet, VecDeque};
 
 use crate::AOCDay;
 
@@ -41,6 +41,36 @@ fn generate_sequence_key(sequence: &VecDeque<(i64, i64)>) -> String {
   })
 }
 
+fn step_sequences(secret_numbers: &mut Vec<i64>, sequences: &mut [VecDeque<(i64, i64)>]) {
+  let next = secret_numbers
+    .iter()
+    .enumerate()
+    .map(|(idx, secret_number)| {
+      sequences[idx].pop_front();
+      let next_secret = evolve_number(*secret_number);
+      let last_price = secret_numbers[idx] % 10;
+      let next_price = next_secret % 10;
+      let diff = next_price - last_price;
+      sequences[idx].push_back((next_price, diff));
+
+      next_secret
+    })
+    .collect::<Vec<i64>>();
+
+  *secret_numbers = next;
+}
+
+fn extract_prices(
+  sequences: &[VecDeque<(i64, i64)>],
+  sequence_to_price: &mut [HashMap<String, i64>],
+) {
+  sequences.iter().enumerate().for_each(|(idx, sequence)| {
+    sequence_to_price[idx]
+      .entry(generate_sequence_key(sequence))
+      .or_insert(sequence[3].0);
+  });
+}
+
 pub struct Day22 {}
 
 impl AOCDay for Day22 {
@@ -76,73 +106,31 @@ impl AOCDay for Day22 {
       vec![HashMap::new(); secret_numbers.len()];
 
     for _ in 0..4 {
-      let next = secret_numbers
-        .iter()
-        .enumerate()
-        .map(|(idx, secret_number)| {
-          sequences[idx].pop_front();
-          let next_secret = evolve_number(*secret_number);
-          let last_price = secret_numbers[idx] % 10;
-          let next_price = next_secret % 10;
-          let diff = next_price - last_price;
-          sequences[idx].push_back((next_price, diff));
-
-          next_secret
-        })
-        .collect::<Vec<i64>>();
-
-      secret_numbers = next;
+      step_sequences(&mut secret_numbers, &mut sequences);
     }
-
-    sequences.iter().enumerate().for_each(|(idx, sequence)| {
-      sequence_to_price[idx]
-        .entry(generate_sequence_key(sequence))
-        .or_insert(sequence[3].0);
-    });
+    extract_prices(&sequences, &mut sequence_to_price);
 
     for _ in 4..2000 {
-      let next = secret_numbers
-        .iter()
-        .enumerate()
-        .map(|(idx, secret_number)| {
-          sequences[idx].pop_front();
-          let next_secret = evolve_number(*secret_number);
-          let last_price = secret_numbers[idx] % 10;
-          let next_price = next_secret % 10;
-          let diff = next_price - last_price;
-          sequences[idx].push_back((next_price, diff));
-
-          next_secret
-        })
-        .collect::<Vec<i64>>();
-
-      sequences.iter().enumerate().for_each(|(idx, sequence)| {
-        sequence_to_price[idx]
-          .entry(generate_sequence_key(sequence))
-          .or_insert(sequence[3].0);
-      });
-
-      secret_numbers = next;
+      step_sequences(&mut secret_numbers, &mut sequences);
+      extract_prices(&sequences, &mut sequence_to_price);
     }
 
-    let all_sequences = sequence_to_price
+    let banana_count = sequence_to_price
       .iter()
-      .flat_map(|map_| map_.keys())
-      .collect::<Vec<&String>>();
+      .flat_map(|map_| map_.keys().cloned())
+      // Collect into a HashSet first to remove duplicates, which
+      // drastically improves performance
+      .collect::<HashSet<String>>()
+      .iter()
+      .map(|sequence| {
+        sequence_to_price
+          .iter()
+          .fold(0, |acc, map| acc + map.get(sequence).unwrap_or(&0))
+      })
+      .max()
+      .expect("Impossible for sequence_to_price to be empty");
 
-    let mut max_bananas = 0;
-
-    for sequence in all_sequences {
-      let bananas = sequence_to_price
-        .iter()
-        .fold(0, |acc, map| acc + map.get(sequence).unwrap_or(&0));
-
-      if bananas > max_bananas {
-        max_bananas = bananas;
-      }
-    }
-
-    max_bananas.to_string()
+    banana_count.to_string()
   }
 }
 
@@ -204,22 +192,7 @@ mod tests {
       vec![vec![(0_i64, 0_i64); 4].into(); secret_numbers.len()];
 
     for _ in 0..4 {
-      let next = secret_numbers
-        .iter()
-        .enumerate()
-        .map(|(idx, secret_number)| {
-          sequences[idx].pop_front();
-          let next_secret = evolve_number(*secret_number);
-          let last_price = secret_numbers[idx] % 10;
-          let next_price = next_secret % 10;
-          let diff = next_price - last_price;
-          sequences[idx].push_back((next_price, diff));
-
-          next_secret
-        })
-        .collect::<Vec<i64>>();
-
-      secret_numbers = next;
+      step_sequences(&mut secret_numbers, &mut sequences);
     }
 
     assert_eq!(sequences, vec![vec![(0, -3), (6, 6), (5, -1), (4, -1)]]);
@@ -230,7 +203,7 @@ mod tests {
     let day = Day22 {};
     assert_eq!(
       PART_2_EXAMPLE,
-      day.solve_part2(&read_file("input/day22/test1.txt"))
+      day.solve_part2(&read_file("input/day22/test2.txt"))
     );
   }
 
