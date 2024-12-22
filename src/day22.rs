@@ -1,21 +1,23 @@
+use std::collections::{HashMap, VecDeque};
+
 use crate::AOCDay;
 
 const PART_1_EXAMPLE: &str = "37327623";
 const PART_2_EXAMPLE: &str = "23";
 
-fn parse_input(input: &[String]) -> Vec<u64> {
+fn parse_input(input: &[String]) -> Vec<i64> {
   input.iter().map(|line| line.parse().unwrap()).collect()
 }
 
-fn mix_number(first: u64, second: u64) -> u64 {
+fn mix_number(first: i64, second: i64) -> i64 {
   first ^ second
 }
 
-fn prune_number(secret_number: u64) -> u64 {
+fn prune_number(secret_number: i64) -> i64 {
   secret_number % 16_777_216
 }
 
-fn evolve_number(secret_number: u64) -> u64 {
+fn evolve_number(secret_number: i64) -> i64 {
   let first = secret_number * 64;
   let first_mixed = mix_number(secret_number, first);
   let first_pruned = prune_number(first_mixed);
@@ -28,6 +30,15 @@ fn evolve_number(secret_number: u64) -> u64 {
   let third_mixed = mix_number(second_pruned, third);
 
   prune_number(third_mixed)
+}
+
+fn generate_sequence_key(sequence: &VecDeque<(i64, i64)>) -> String {
+  sequence.iter().fold(String::new(), |acc, (_, diff)| {
+    if acc.is_empty() {
+      return diff.to_string();
+    }
+    format!("{acc},{diff}")
+  })
 }
 
 pub struct Day22 {}
@@ -54,12 +65,84 @@ impl AOCDay for Day22 {
         .collect();
     }
 
-    secret_numbers.iter().sum::<u64>().to_string()
+    secret_numbers.iter().sum::<i64>().to_string()
   }
 
   fn solve_part2(&self, input: &[String]) -> String {
-    let input = parse_input(input);
-    "Not implemented".to_string()
+    let mut secret_numbers = parse_input(input);
+    let mut sequences: Vec<VecDeque<(i64, i64)>> =
+      vec![vec![(0_i64, 0_i64); 4].into(); secret_numbers.len()];
+    let mut sequence_to_price: Vec<HashMap<String, i64>> =
+      vec![HashMap::new(); secret_numbers.len()];
+
+    for _ in 0..4 {
+      let next = secret_numbers
+        .iter()
+        .enumerate()
+        .map(|(idx, secret_number)| {
+          sequences[idx].pop_front();
+          let next_secret = evolve_number(*secret_number);
+          let last_price = secret_numbers[idx] % 10;
+          let next_price = next_secret % 10;
+          let diff = next_price - last_price;
+          sequences[idx].push_back((next_price, diff));
+
+          next_secret
+        })
+        .collect::<Vec<i64>>();
+
+      secret_numbers = next;
+    }
+
+    sequences.iter().enumerate().for_each(|(idx, sequence)| {
+      sequence_to_price[idx]
+        .entry(generate_sequence_key(sequence))
+        .or_insert(sequence[3].0);
+    });
+
+    for _ in 4..2000 {
+      let next = secret_numbers
+        .iter()
+        .enumerate()
+        .map(|(idx, secret_number)| {
+          sequences[idx].pop_front();
+          let next_secret = evolve_number(*secret_number);
+          let last_price = secret_numbers[idx] % 10;
+          let next_price = next_secret % 10;
+          let diff = next_price - last_price;
+          sequences[idx].push_back((next_price, diff));
+
+          next_secret
+        })
+        .collect::<Vec<i64>>();
+
+      sequences.iter().enumerate().for_each(|(idx, sequence)| {
+        sequence_to_price[idx]
+          .entry(generate_sequence_key(sequence))
+          .or_insert(sequence[3].0);
+      });
+
+      secret_numbers = next;
+    }
+
+    let all_sequences = sequence_to_price
+      .iter()
+      .flat_map(|map_| map_.keys())
+      .collect::<Vec<&String>>();
+
+    let mut max_bananas = 0;
+
+    for sequence in all_sequences {
+      let bananas = sequence_to_price
+        .iter()
+        .fold(0, |acc, map| acc + map.get(sequence).unwrap_or(&0));
+
+      if bananas > max_bananas {
+        max_bananas = bananas;
+      }
+    }
+
+    max_bananas.to_string()
   }
 }
 
@@ -69,6 +152,13 @@ mod tests {
 
   use super::*;
   use crate::utils::read_file;
+
+  #[test]
+  fn test_generate_sequence_key() {
+    let sequence = vec![(0, -3), (6, 6), (5, -1), (4, -1)].into();
+    let sequence_key = generate_sequence_key(&sequence);
+    assert_eq!(sequence_key, "-3,6,-1,-1");
+  }
 
   #[test]
   fn test_first_example() {
@@ -105,6 +195,34 @@ mod tests {
       "20332089158",
       day.solve_part1(&read_file("input/day22/part1.txt"))
     );
+  }
+
+  #[test]
+  fn test_part_2_first_example() {
+    let mut secret_numbers = vec![123_i64];
+    let mut sequences: Vec<VecDeque<(i64, i64)>> =
+      vec![vec![(0_i64, 0_i64); 4].into(); secret_numbers.len()];
+
+    for _ in 0..4 {
+      let next = secret_numbers
+        .iter()
+        .enumerate()
+        .map(|(idx, secret_number)| {
+          sequences[idx].pop_front();
+          let next_secret = evolve_number(*secret_number);
+          let last_price = secret_numbers[idx] % 10;
+          let next_price = next_secret % 10;
+          let diff = next_price - last_price;
+          sequences[idx].push_back((next_price, diff));
+
+          next_secret
+        })
+        .collect::<Vec<i64>>();
+
+      secret_numbers = next;
+    }
+
+    assert_eq!(sequences, vec![vec![(0, -3), (6, 6), (5, -1), (4, -1)]]);
   }
 
   #[test]
