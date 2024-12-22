@@ -237,6 +237,6 @@ mod tests {
   #[test]
   fn test_part_2() {
     let day = Day22 {};
-    assert_eq!("TODO", day.solve_part2(&read_file("input/day22/part1.txt")));
+    assert_eq!("2191", day.solve_part2(&read_file("input/day22/part1.txt")));
   }
 }
