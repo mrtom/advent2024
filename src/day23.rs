@@ -1,4 +1,4 @@
-use petgraph::{graph::UnGraph, Graph};
+use petgraph::{graph::NodeIndex, graph::UnGraph, Graph};
 use regex::Regex;
 use std::collections::HashSet;
 
@@ -40,10 +40,60 @@ fn parse_input(input: &[String]) -> Graph<&str, (), petgraph::Undirected> {
   computers
 }
 
-fn cycle_key(node1: &str, node2: &str, node3: &str) -> String {
-  let mut keys = [node1, node2, node3];
+fn group_key(group: &[NodeIndex], graph: &Graph<&str, (), petgraph::Undirected>) -> String {
+  let mut keys: Vec<&str> = group.iter().map(|i| graph[*i]).collect::<Vec<&str>>();
   keys.sort_unstable();
-  format!("{},{},{}", keys[0], keys[1], keys[2])
+  keys.join(",")
+}
+
+fn intersect<'a>(a: &'a [NodeIndex], b: &'a [NodeIndex]) -> Vec<NodeIndex> {
+  a.iter().filter(|&x| b.contains(x)).copied().collect()
+}
+
+fn bron_kerbosch(
+  graph: &Graph<&str, (), petgraph::Undirected>,
+  largest_subgraph_key: String,
+  current: &[NodeIndex],
+  candidates: &mut Vec<NodeIndex>,
+  processed: &mut Vec<NodeIndex>,
+) -> String {
+  let mut existing_key = largest_subgraph_key;
+
+  if candidates.is_empty() && processed.is_empty() {
+    let key = group_key(current, graph);
+    if key.len() > existing_key.len() {
+      return key;
+    }
+    return existing_key;
+  }
+
+  while !candidates.is_empty() {
+    let node = candidates[0];
+    let mut new_current_set: HashSet<NodeIndex> = current.iter().copied().collect();
+    new_current_set.insert(node);
+    let new_current = new_current_set.into_iter().collect::<Vec<NodeIndex>>();
+
+    let neighbours = graph.neighbors(node).collect::<Vec<_>>();
+    let mut new_candidates = intersect(candidates, &neighbours);
+    let mut new_processed = intersect(processed, &neighbours);
+
+    let candidate_key = bron_kerbosch(
+      graph,
+      existing_key.clone(),
+      &new_current,
+      &mut new_candidates,
+      &mut new_processed,
+    );
+
+    if candidate_key.len() > existing_key.len() {
+      existing_key = candidate_key;
+    }
+
+    candidates.remove(0);
+    processed.push(node);
+  }
+
+  existing_key
 }
 
 pub struct Day23 {}
@@ -71,11 +121,7 @@ impl AOCDay for Day23 {
         let second_neighbours = computers.neighbors(neighbour).collect::<Vec<_>>();
         for second_neighbour in second_neighbours {
           if second_neighbour != node && computers.contains_edge(node, second_neighbour) {
-            triplets.insert(cycle_key(
-              computers[node],
-              computers[neighbour],
-              computers[second_neighbour],
-            ));
+            triplets.insert(group_key(&[node, neighbour, second_neighbour], &computers));
           }
         }
       }
@@ -91,7 +137,9 @@ impl AOCDay for Day23 {
   }
 
   fn solve_part2(&self, input: &[String]) -> String {
-    "Not implemented".to_string()
+    let computers = parse_input(input);
+    let mut all = computers.node_indices().collect::<Vec<NodeIndex>>();
+    bron_kerbosch(&computers, String::new(), &[], &mut all, &mut vec![])
   }
 }
 
@@ -127,6 +175,9 @@ mod tests {
   #[test]
   fn test_part_2() {
     let day = Day23 {};
-    assert_eq!("TODO", day.solve_part2(&read_file("input/day23/part1.txt")));
+    assert_eq!(
+      "ac,ed,fh,kd,lf,mb,om,pe,qt,uo,uy,vr,wg",
+      day.solve_part2(&read_file("input/day23/part1.txt"))
+    );
   }
 }
