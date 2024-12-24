@@ -13,6 +13,7 @@ mod day2;
 mod day20;
 mod day22;
 mod day23;
+mod day24;
 mod day3;
 mod day4;
 mod day5;
@@ -45,7 +46,8 @@ use std::path::Path;
 // use day19::Day19;
 // use day20::Day20;
 // use day22::Day22;
-use day23::Day23;
+// use day23::Day23;
+use day24::Day24;
 
 pub trait AOCDay {
   fn name(&self) -> String;
@@ -128,7 +130,8 @@ fn main() {
   // let day19 = Day19 {};
   // let day20 = Day20 {};
   // let day22 = Day22 {};
-  let day23 = Day23 {};
+  // let day23 = Day23 {};
+  let day24 = Day24 {};
 
   // run_day(&day1);
   // run_day(&day2);
@@ -151,7 +154,8 @@ fn main() {
   // run_day(&day19);
   // run_day(&day20);
   // run_day(&day22);
-  run_day(&day23);
+  // run_day(&day23);
+  run_day(&day24);
 
   println!("{:?}", start.elapsed());
 }
