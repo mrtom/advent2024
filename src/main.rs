@@ -41,7 +41,7 @@ use std::path::Path;
 // use day12::Day12;
 // use day13::Day13;
 // use day14::Day14;
-use day15::Day15;
+// use day15::Day15;
 // use day16::Day16;
 // use day17::Day17;
 // use day18::Day18;
@@ -50,7 +50,7 @@ use day15::Day15;
 // use day21::Day21;
 // use day22::Day22;
 // use day23::Day23;
-// use day24::Day24;
+use day24::Day24;
 // use day25::Day25;
 
 pub trait AOCDay {
@@ -127,7 +127,7 @@ fn main() {
   // let day12 = Day12 {};
   // let day13 = Day13 {};
   // let day14 = Day14 {};
-  let day15 = Day15 {};
+  // let day15 = Day15 {};
   // let day16 = Day16 {};
   // let day17 = Day17 {};
   // let day18 = Day18 {};
@@ -136,7 +136,7 @@ fn main() {
   // let day21 = Day21 {};
   // let day22 = Day22 {};
   // let day23 = Day23 {};
-  // let day24 = Day24 {};
+  let day24 = Day24 {};
   // let day25 = Day25 {};
 
   // run_day(&day1);
@@ -153,7 +153,7 @@ fn main() {
   // run_day(&day12);
   // run_day(&day13);
   // run_day(&day14);
-  run_day(&day15);
+  // run_day(&day15);
   // run_day(&day16);
   // run_day(&day17);
   // run_day(&day18);
@@ -162,7 +162,7 @@ fn main() {
   // run_day(&day21);
   // run_day(&day22);
   // run_day(&day23);
-  // run_day(&day24);
+  run_day(&day24);
   // run_day(&day25);
 
   println!("{:?}", start.elapsed());
