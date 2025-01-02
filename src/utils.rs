@@ -20,15 +20,15 @@ pub fn i32_to_usize_x(value: i32) -> usize {
   v.expect("Failed to convert i32 to usize")
 }
 
-pub fn i32_to_u32_x(value: i32) -> u32 {
-  value.try_into().expect("Failed to convert i32 to u32")
-}
-
 pub fn usize_to_i32(value: usize) -> Option<i32> {
   value.try_into().ok()
 }
 pub fn usize_to_i32_x(value: usize) -> i32 {
   value.try_into().expect("Failed to convert usize to i32")
+}
+
+pub fn usize_to_u32_x(value: usize) -> u32 {
+  value.try_into().expect("Failed to convert usize to u32")
 }
 
 pub fn u32_to_i32(value: u32) -> Option<i32> {
@@ -40,6 +40,13 @@ pub fn u32_to_i32_x(value: u32) -> i32 {
 
 pub fn isize_to_usize_x(value: isize) -> usize {
   value.try_into().expect("Failed to convert isize to usize")
+}
+pub fn u32_to_usize_x(value: u32) -> usize {
+  value.try_into().expect("Failed to convert isize to usize")
+}
+
+pub fn u64_to_u32_x(value: u64) -> u32 {
+  value.try_into().expect("Failed to convert u64 to u32")
 }
 
 // Mark - Points

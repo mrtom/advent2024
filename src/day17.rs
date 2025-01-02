@@ -8,10 +8,10 @@ const PART_2_EXAMPLE: &str = "117440";
 
 #[derive(Clone)]
 struct Computer {
-  reg_a: i32,
-  reg_b: i32,
-  reg_c: i32,
-  instruction_ptr: i32,
+  reg_a: u64,
+  reg_b: u64,
+  reg_c: u64,
+  instruction_ptr: u32,
 }
 
 fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
@@ -26,9 +26,9 @@ fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
     panic!("Failed to parse third line");
   };
 
-  let reg_a = caps_a.get(1).unwrap().as_str().parse::<i32>().unwrap();
-  let reg_b = caps_b.get(1).unwrap().as_str().parse::<i32>().unwrap();
-  let reg_c = caps_c.get(1).unwrap().as_str().parse::<i32>().unwrap();
+  let reg_a = caps_a.get(1).unwrap().as_str().parse::<u64>().unwrap();
+  let reg_b = caps_b.get(1).unwrap().as_str().parse::<u64>().unwrap();
+  let reg_c = caps_c.get(1).unwrap().as_str().parse::<u64>().unwrap();
 
   let program_regex = Regex::new(r"Program: ([0-9,]+)").unwrap();
   let Some(caps_program) = program_regex.captures(&input[4]) else {
@@ -53,7 +53,7 @@ fn parse_input(input: &[String]) -> (Computer, Vec<u8>) {
   )
 }
 
-fn combo_operand(operand: u8, computer: &Computer) -> i32 {
+fn combo_operand(operand: u8, computer: &Computer) -> u64 {
   match operand {
     0 => 0,
     1 => 1,
@@ -70,11 +70,11 @@ fn combo_operand(operand: u8, computer: &Computer) -> i32 {
 fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<String> {
   match opcode {
     0 => {
-      computer.reg_a /= 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
+      computer.reg_a /= 2_u64.pow(utils::u64_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
     1 => {
-      computer.reg_b ^= i32::from(operand);
+      computer.reg_b ^= u64::from(operand);
       computer.instruction_ptr += 2;
     }
     2 => {
@@ -86,7 +86,7 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
         computer.instruction_ptr += 2;
       }
       _ => {
-        computer.instruction_ptr = i32::from(operand);
+        computer.instruction_ptr = u32::from(operand);
       }
     },
     4 => {
@@ -100,12 +100,12 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
     }
     6 => {
       computer.reg_b =
-        computer.reg_a / 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
+        computer.reg_a / 2_u64.pow(utils::u64_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
     7 => {
       computer.reg_c =
-        computer.reg_a / 2_i32.pow(utils::i32_to_u32_x(combo_operand(operand, computer)));
+        computer.reg_a / 2_u64.pow(utils::u64_to_u32_x(combo_operand(operand, computer)));
       computer.instruction_ptr += 2;
     }
 
@@ -118,15 +118,43 @@ fn perform_opcode(opcode: u8, operand: u8, computer: &mut Computer) -> Option<St
 fn run_program(program: &[u8], computer: &mut Computer) -> Vec<String> {
   let mut output = Vec::new();
 
-  while computer.instruction_ptr < utils::usize_to_i32_x(program.len()) {
-    let opcode = program[utils::i32_to_usize_x(computer.instruction_ptr)];
-    let operand = program[utils::i32_to_usize_x(computer.instruction_ptr) + 1];
+  while computer.instruction_ptr < utils::usize_to_u32_x(program.len()) {
+    let opcode = program[utils::u32_to_usize_x(computer.instruction_ptr)];
+    let operand = program[utils::u32_to_usize_x(computer.instruction_ptr) + 1];
     if let Some(oput) = perform_opcode(opcode, operand, computer) {
       output.push(oput);
     }
   }
 
   output
+}
+
+fn recurse_part_2(program: &[u8], computer: &Computer, index: usize, a: u64) -> Option<u64> {
+  for candidate in 0..8 {
+    let next_a = a * 8 + candidate;
+    let mut next_computer = computer.clone();
+    next_computer.reg_a = next_a;
+    next_computer.reg_b = 0;
+    next_computer.reg_c = 0;
+    let output = run_program(program, &mut next_computer);
+    let (_, suffix) = program.split_at(index);
+    if output
+      == suffix
+        .iter()
+        .map(ToString::to_string)
+        .collect::<Vec<String>>()
+    {
+      if index == 0 {
+        return Some(next_a);
+      }
+      let next = recurse_part_2(program, computer, index - 1, next_a);
+      if next.is_some() {
+        return next;
+      }
+    }
+  }
+
+  None
 }
 
 pub struct Day17 {}
@@ -152,23 +180,24 @@ impl AOCDay for Day17 {
     result.to_string()
   }
 
+  /**
+   * while a != 0 {
+   *   b = a % 8
+   *   b = b ^ 5
+   *   c = a / (1 << b)
+   *   b = b ^ c
+   *   b = b ^ 6
+   *   a = a / (1 << 3)
+   *   out.add(b % 8)
+   * }
+   */
   fn solve_part2(&self, input: &[String]) -> String {
     let (computer, program) = parse_input(input);
-
-    let program_as_str = program
-      .iter()
-      .map(ToString::to_string)
-      .collect::<Vec<String>>();
-    for a in 0..=i32::MAX {
-      let mut next_computer = computer.clone();
-      next_computer.reg_a = a;
-      let output = run_program(&program, &mut next_computer);
-      if output == program_as_str {
-        return a.to_string();
-      }
+    if let Some(result) = recurse_part_2(&program, &computer, program.len() - 1, 0) {
+      result.to_string()
+    } else {
+      panic!("Failed to find a solution");
     }
-
-    panic!("Failed to find a solution");
   }
 }
 
@@ -337,12 +366,12 @@ mod tests {
     );
   }
 
-  // #[test]
-  // fn test_part_2() {
-  //   let day = Day17 {};
-  //   assert_eq!(
-  //     "TODO",
-  //     day.solve_part2(&read_file("input/day17/part1.txt"))
-  //   );
-  // }
+  #[test]
+  fn test_part_2() {
+    let day = Day17 {};
+    assert_eq!(
+      "216584205979245",
+      day.solve_part2(&read_file("input/day17/part1.txt"))
+    );
+  }
 }
