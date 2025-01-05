@@ -110,6 +110,7 @@ fn run_day(day: &impl AOCDay) {
   }
 }
 
+#[allow(clippy::similar_names)]
 fn main() {
   let start = std::time::Instant::now();
 
