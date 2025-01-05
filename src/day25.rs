@@ -1,7 +1,7 @@
 use crate::AOCDay;
 
 const PART_1_EXAMPLE: &str = "3";
-const PART_2_EXAMPLE: &str = "FAIL";
+const PART_2_EXAMPLE: &str = "SKIP";
 
 fn parse_input(input: &[String]) -> (Vec<Vec<usize>>, Vec<Vec<usize>>) {
   let mut locks = Vec::new();
@@ -62,9 +62,8 @@ impl AOCDay for Day25 {
     result.to_string()
   }
 
-  fn solve_part2(&self, input: &[String]) -> String {
-    let input = parse_input(input);
-    "Not implemented".to_string()
+  fn solve_part2(&self, _input: &[String]) -> String {
+    "SKIP".to_string()
   }
 }
 
@@ -86,20 +85,5 @@ mod tests {
   fn test_part_1() {
     let day = Day25 {};
     assert_eq!("2978", day.solve_part1(&read_file("input/day25/part1.txt")));
-  }
-
-  #[test]
-  fn test_part_2_example() {
-    let day = Day25 {};
-    assert_eq!(
-      PART_2_EXAMPLE,
-      day.solve_part2(&read_file("input/day25/test1.txt"))
-    );
-  }
-
-  #[test]
-  fn test_part_2() {
-    let day = Day25 {};
-    assert_eq!("TODO", day.solve_part2(&read_file("input/day25/part1.txt")));
   }
 }
