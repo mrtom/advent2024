@@ -34,9 +34,6 @@ pub fn usize_to_u32_x(value: usize) -> u32 {
 pub fn u32_to_i32(value: u32) -> Option<i32> {
   value.try_into().ok()
 }
-pub fn u32_to_i32_x(value: u32) -> i32 {
-  value.try_into().expect("Failed to convert u32 to i32")
-}
 
 pub fn isize_to_usize_x(value: isize) -> usize {
   value.try_into().expect("Failed to convert isize to usize")
@@ -66,8 +63,4 @@ impl fmt::Display for Point {
     // is very similar to `println!`.
     write!(f, "{},{}", self.x, self.y)
   }
-}
-
-pub fn get_manhattan_distance(a: Point, b: Point) -> i32 {
-  u32_to_i32_x(a.x.abs_diff(b.x) + a.y.abs_diff(b.y))
 }
