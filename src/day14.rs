@@ -182,10 +182,10 @@ impl AOCDay for Day14 {
         .count();
 
       if num_tightly_packed > 300 {
-        println!("Possible solution found: {i}");
-        println!("Tightly packed: {num_tightly_packed}");
-        print_locations(&locations);
-        println!("---------------------\n\n");
+        // println!("Possible solution found: {i}");
+        // println!("Tightly packed: {num_tightly_packed}");
+        // print_locations(&locations);
+        // println!("---------------------\n\n");
         return i.to_string();
       }
     }
