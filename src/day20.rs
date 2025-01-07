@@ -109,7 +109,7 @@ fn generate_cheat_paths_for_tile(
   cheat_start: Point,
   path_length: usize,
 ) -> HashSet<(Point, Point, usize)> {
-  // Take all the tiles in the map
+  // Take all the track tiles in the map
   track_tiles
     .iter()
     // get the manhatten distance from the cheat start to the end
@@ -177,7 +177,7 @@ fn count_cheat_paths(
     .flat_map(|point| generate_cheat_paths_for_tile(&all_track_tiles, *point, path_length))
     .filter_map(|(cheat_start, cheat_end, cheat_distance)| {
       let start_cost = from_start[cheat_start.y][cheat_start.x];
-      let end_cost = from_start[end.y][end.x] - from_start[cheat_end.y][cheat_end.x];
+      let end_cost = total_cost - from_start[cheat_end.y][cheat_end.x];
       let cost = start_cost + cheat_distance + end_cost;
       let saving = total_cost.saturating_sub(cost);
 
