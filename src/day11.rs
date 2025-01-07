@@ -23,19 +23,7 @@ fn apply_rules(rock: usize) -> (usize, Option<usize>) {
   }
 }
 
-fn blink(input: &mut Vec<usize>) {
-  let original_last_idx = input.len() - 1;
-  for i in 0..input.len() {
-    let idx = original_last_idx - i;
-    let (left, right) = apply_rules(input[idx]);
-    input[idx] = left;
-    if let Some(new_rock) = right {
-      input.insert(idx + 1, new_rock);
-    }
-  }
-}
-
-fn blink_part2(map: &HashMap<usize, usize>) -> HashMap<usize, usize> {
+fn blink(map: &HashMap<usize, usize>) -> HashMap<usize, usize> {
   let mut new_map = HashMap::new();
 
   for (rock, count) in map {
@@ -67,11 +55,15 @@ impl AOCDay for Day11 {
   }
 
   fn solve_part1(&self, input: &[String]) -> String {
-    let mut input = parse_input(&input[0]);
+    let input = parse_input(&input[0]);
+    let mut map: HashMap<usize, usize> = input.iter().map(|value| (*value, 1)).collect();
+
     for _ in 0..25 {
-      blink(&mut input);
+      map = blink(&map);
     }
-    input.len().to_string()
+
+    let result = map.values().sum::<usize>();
+    result.to_string()
   }
 
   fn solve_part2(&self, input: &[String]) -> String {
@@ -79,7 +71,7 @@ impl AOCDay for Day11 {
     let mut map: HashMap<usize, usize> = input.iter().map(|value| (*value, 1)).collect();
 
     for _ in 0..75 {
-      map = blink_part2(&map);
+      map = blink(&map);
     }
 
     let result = map.values().sum::<usize>();
