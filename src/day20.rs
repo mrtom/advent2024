@@ -105,28 +105,19 @@ fn get_neighbours(map: &Map, location: Point) -> Vec<Point> {
 }
 
 fn generate_cheat_paths_for_tile(
-  map: &Map,
+  track_tiles: &[Point],
   cheat_start: Point,
   path_length: usize,
 ) -> HashSet<(Point, Point, usize)> {
   // Take all the tiles in the map
-  map
+  track_tiles
     .iter()
-    .enumerate()
-    .flat_map(|(row_idx, col)| {
-      col.iter().enumerate().map(move |(col_idx, _)| Point {
-        x: col_idx,
-        y: row_idx,
-      })
-    })
-    // Then filter only the track tiles
-    .filter(|cheat_end| map[cheat_end.y][cheat_end.x] == '.')
     // get the manhatten distance from the cheat start to the end
     // and filter the ones that are within the path length
     .filter_map(|cheat_end| {
-      let distance = get_manhattan_distance(cheat_start, cheat_end);
+      let distance = get_manhattan_distance(cheat_start, *cheat_end);
       if distance <= path_length {
-        Some((cheat_start, cheat_end, distance))
+        Some((cheat_start, *cheat_end, distance))
       } else {
         None
       }
@@ -158,7 +149,11 @@ fn count_cheat_paths(
   path_length: usize,
   required_saving: usize,
 ) -> usize {
-  let mut from_start = vec![vec![usize::MAX; map[0].len()]; map.len()];
+  let all_track_tiles = get_track_tiles(map);
+  let width = map.len();
+  let height = map[0].len();
+
+  let mut from_start = vec![vec![usize::MAX; width]; height];
   let mut from_start_queue: VecDeque<(Point, usize)> = VecDeque::new();
   from_start_queue.push_back((start, 0));
   from_start[start.y][start.x] = 0;
@@ -177,29 +172,12 @@ fn count_cheat_paths(
 
   let total_cost = from_start[end.y][end.x];
 
-  let mut to_end = vec![vec![usize::MAX; map[0].len()]; map.len()];
-  let mut to_end_queue = VecDeque::new();
-  to_end_queue.push_back((end, 0));
-  to_end[end.y][end.x] = 0;
-
-  while !to_end_queue.is_empty() {
-    let (current, cost) = to_end_queue.pop_front().unwrap();
-
-    for neighbour in get_neighbours(map, current) {
-      let new_cost = cost + 1;
-      if new_cost < to_end[neighbour.y][neighbour.x] {
-        to_end[neighbour.y][neighbour.x] = new_cost;
-        to_end_queue.push_back((neighbour, new_cost));
-      }
-    }
-  }
-
-  let all_cheat_paths = get_track_tiles(map)
+  let all_cheat_paths = all_track_tiles
     .iter()
-    .flat_map(|point| generate_cheat_paths_for_tile(map, *point, path_length))
+    .flat_map(|point| generate_cheat_paths_for_tile(&all_track_tiles, *point, path_length))
     .filter_map(|(cheat_start, cheat_end, cheat_distance)| {
       let start_cost = from_start[cheat_start.y][cheat_start.x];
-      let end_cost = to_end[cheat_end.y][cheat_end.x];
+      let end_cost = from_start[end.y][end.x] - from_start[cheat_end.y][cheat_end.x];
       let cost = start_cost + cheat_distance + end_cost;
       let saving = total_cost.saturating_sub(cost);
 
