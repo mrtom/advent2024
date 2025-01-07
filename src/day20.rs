@@ -1,5 +1,4 @@
 use crate::AOCDay;
-use pathfinding::prelude::astar;
 use std::collections::{HashSet, VecDeque};
 
 const PART_1_EXAMPLE: &str = "5";
@@ -68,51 +67,39 @@ fn is_test(input: &[Vec<char>]) -> bool {
   input.len() == 15
 }
 
-fn get_neighbours(map: &Map, location: Point) -> Vec<(Point, usize)> {
+fn get_neighbours(map: &Map, location: Point) -> Vec<Point> {
   let mut neighbours = vec![];
   if location.x > 0 {
-    neighbours.push((
-      Point {
-        x: location.x - 1,
-        y: location.y,
-      },
-      1,
-    ));
+    neighbours.push(Point {
+      x: location.x - 1,
+      y: location.y,
+    });
   }
 
   if location.y > 0 {
-    neighbours.push((
-      Point {
-        x: location.x,
-        y: location.y - 1,
-      },
-      1,
-    ));
+    neighbours.push(Point {
+      x: location.x,
+      y: location.y - 1,
+    });
   }
 
   if location.x < map[0].len() - 1 {
-    neighbours.push((
-      Point {
-        x: location.x + 1,
-        y: location.y,
-      },
-      1,
-    ));
+    neighbours.push(Point {
+      x: location.x + 1,
+      y: location.y,
+    });
   }
 
   if location.y < map.len() - 1 {
-    neighbours.push((
-      Point {
-        x: location.x,
-        y: location.y + 1,
-      },
-      1,
-    ));
+    neighbours.push(Point {
+      x: location.x,
+      y: location.y + 1,
+    });
   }
 
   neighbours
     .iter()
-    .filter(|(point, _)| map[point.y][point.x] == '.')
+    .filter(|point| map[point.y][point.x] == '.')
     .copied()
     .collect()
 }
@@ -171,17 +158,7 @@ fn count_cheat_paths(
   path_length: usize,
   required_saving: usize,
 ) -> usize {
-  let total_cost = astar(
-    &start,
-    |loc| get_neighbours(map, *loc),
-    |loc| get_manhattan_distance(end, *loc),
-    |loc| *loc == end,
-  )
-  .expect("Could not find valid path through maze")
-  .1;
-
   let mut from_start = vec![vec![usize::MAX; map[0].len()]; map.len()];
-
   let mut from_start_queue: VecDeque<(Point, usize)> = VecDeque::new();
   from_start_queue.push_back((start, 0));
   from_start[start.y][start.x] = 0;
@@ -189,14 +166,16 @@ fn count_cheat_paths(
   while !from_start_queue.is_empty() {
     let (current, cost) = from_start_queue.pop_front().unwrap();
 
-    for (neighbour, neighbour_cost) in get_neighbours(map, current) {
-      let new_cost = cost + neighbour_cost;
+    for neighbour in get_neighbours(map, current) {
+      let new_cost = cost + 1;
       if new_cost < from_start[neighbour.y][neighbour.x] {
         from_start[neighbour.y][neighbour.x] = new_cost;
         from_start_queue.push_back((neighbour, new_cost));
       }
     }
   }
+
+  let total_cost = from_start[end.y][end.x];
 
   let mut to_end = vec![vec![usize::MAX; map[0].len()]; map.len()];
   let mut to_end_queue = VecDeque::new();
@@ -206,8 +185,8 @@ fn count_cheat_paths(
   while !to_end_queue.is_empty() {
     let (current, cost) = to_end_queue.pop_front().unwrap();
 
-    for (neighbour, neighbour_cost) in get_neighbours(map, current) {
-      let new_cost = cost + neighbour_cost;
+    for neighbour in get_neighbours(map, current) {
+      let new_cost = cost + 1;
       if new_cost < to_end[neighbour.y][neighbour.x] {
         to_end[neighbour.y][neighbour.x] = new_cost;
         to_end_queue.push_back((neighbour, new_cost));
