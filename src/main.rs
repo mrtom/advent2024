@@ -175,31 +175,31 @@ fn main() {
   let day25 = Day25 {};
 
   let days: Vec<Box<dyn AOCDay>> = vec![
-    // Box::new(day1),
-    // Box::new(day2),
-    // Box::new(day3),
-    // Box::new(day4),
-    // Box::new(day5),
-    // Box::new(day6),
-    // Box::new(day7),
-    // Box::new(day8),
-    // Box::new(day9),
-    // Box::new(day10),
-    // Box::new(day11),
-    // Box::new(day12),
-    // Box::new(day13),
-    // Box::new(day14),
-    // Box::new(day15),
-    // Box::new(day16),
-    // Box::new(day17),
-    // Box::new(day18),
-    // Box::new(day19),
+    Box::new(day1),
+    Box::new(day2),
+    Box::new(day3),
+    Box::new(day4),
+    Box::new(day5),
+    Box::new(day6),
+    Box::new(day7),
+    Box::new(day8),
+    Box::new(day9),
+    Box::new(day10),
+    Box::new(day11),
+    Box::new(day12),
+    Box::new(day13),
+    Box::new(day14),
+    Box::new(day15),
+    Box::new(day16),
+    Box::new(day17),
+    Box::new(day18),
+    Box::new(day19),
     Box::new(day20),
-    // Box::new(day21),
-    // Box::new(day22),
-    // Box::new(day23),
-    // Box::new(day24),
-    // Box::new(day25),
+    Box::new(day21),
+    Box::new(day22),
+    Box::new(day23),
+    Box::new(day24),
+    Box::new(day25),
   ];
 
   if args.len() > 1 && args[1] == "run" {
@@ -208,5 +208,5 @@ fn main() {
     days.par_iter().for_each(|day| check_day(&**day));
   }
 
-  println!("{:?}", start.elapsed());
+  println!("Total Time: {:?}", start.elapsed());
 }
